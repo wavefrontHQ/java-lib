@@ -40,6 +40,7 @@ public class Validation {
 
   private final static LoadingCache<String, Counter> ERROR_COUNTERS = Caffeine.newBuilder().
       build(x -> Metrics.newCounter(new MetricName("point", "", x)));
+  private static final RateLimiter blockedLoggingRateLimiter = RateLimiter.create(1);
   private static final Logger log = Logger.getLogger(Validation.class.getCanonicalName());
 
   public static boolean charactersAreValid(String input) {
@@ -206,11 +207,13 @@ public class Validation {
           throw new IllegalArgumentException("WF-416: Point tag key has illegal character(s): " + tagK);
         }
         if (tagV.length() > config.getSpanAnnotationsValueLengthLimit()) {
-          log.warning("[" + span.getCustomer() + "] Span trimmed due to tagV length: " +
-              annotation.getKey() + " limit for: " + span.getCustomer() + " is: " +
-              config.getSpanAnnotationsValueLengthLimit() + ", found: " + annotation.getValue().length()
-              + ", span: " + span);
-          // trim the tag value to the allowed limit
+          if (blockedLoggingRateLimiter.tryAcquire()) {
+            log.warning("[" + span.getCustomer() + "] Span trimmed due to tagV length: " +
+                annotation.getKey() + " limit for: " + span.getCustomer() + " is: " +
+                config.getSpanAnnotationsValueLengthLimit() + ", found: " + annotation.getValue().length()
+                + ", span: " + span);
+          }
+            // trim the tag value to the allowed limit
           annotation.setValue(annotation.getValue().substring(0, config.getSpanAnnotationsValueLengthLimit()));
           ERROR_COUNTERS.get("spanAnnotationValueTruncated").inc();
         }
