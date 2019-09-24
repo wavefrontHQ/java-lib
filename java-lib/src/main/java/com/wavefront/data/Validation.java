@@ -43,7 +43,7 @@ public class Validation {
   private final static LoadingCache<String, Counter> TRIM_COUNTERS = Caffeine.newBuilder().
       build(x -> Metrics.newCounter(new MetricName("point", "", x)));
   private static final RateLimiter blockedLoggingRateLimiter = RateLimiter.create(1);
-  private static final Logger log = Logger.getLogger("DataIngester");
+  private static final Logger log = Logger.getLogger(Validation.class.getCanonicalName());
 
   public static boolean charactersAreValid(String input) {
     // Legal characters are 44-57 (,-./ and numbers), 65-90 (upper), 97-122 (lower), 95 (_)
@@ -215,7 +215,7 @@ public class Validation {
                 config.getAnnotationsValueLengthLimit() + ", found: " + annotation.getValue().length()
                 + ", span: " + span);
             // trim the tag value to the allowed limit
-            annotation.setValue(annotation.getValue().substring(0, config.getAnnotationsValueLengthLimit()));
+            annotation.setValue(annotation.getValue().substring(0, config.getSpanAnnotationsValueLengthLimit()));
             TRIM_COUNTERS.get("spanAnnotationValueTooLong").inc();
           }
         }

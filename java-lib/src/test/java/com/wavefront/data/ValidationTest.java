@@ -445,9 +445,12 @@ public class ValidationTest {
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("k", "v23456789012345"));
     Validation.validateSpan(span, config);
+    assertEquals("v23456789012345", span.getAnnotations().get(1).getValue());
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("k", "v234567890123456"));
     Validation.validateSpan(span, config);
+    System.currentTimeMillis();
+    assertEquals("v23456789012345", span.getAnnotations().get(1).getValue());
   }
 
   @Test
