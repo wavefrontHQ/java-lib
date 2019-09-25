@@ -91,4 +91,13 @@ protocol Reporting {
     union {null, string} description;
     array<string> annotations = {}; // might be empty
   }
+
+  record Event {
+    string name;
+    long startTime;
+    union {null, long} endTime = null;
+    map<string> annotations;
+    array<string> hosts = [];
+    union {null, array<string>} tags = null;
+  }
 }
