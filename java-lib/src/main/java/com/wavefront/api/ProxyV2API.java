@@ -45,7 +45,7 @@ public interface ProxyV2API {
                                   @QueryParam("hostname") String hostname,
                                   @QueryParam("version") String version,
                                   @QueryParam("currentMillis") final Long currentMillis,
-                                  JsonNode agentMetrics,
+                                  @GZIP JsonNode agentMetrics,
                                   @QueryParam("ephemeral") Boolean ephemeral);
 
   /**
