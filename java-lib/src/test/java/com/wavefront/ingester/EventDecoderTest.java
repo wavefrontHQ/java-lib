@@ -63,13 +63,13 @@ public class EventDecoderTest {
     assertArrayEquals(new String[] {"app1", "app2", "app3", "app4"}, out.get(0).getHosts().toArray());
     assertEquals(2, out.get(0).getTags().size());
     assertArrayEquals(new String[] {"eventtag1", "eventtag2"}, out.get(0).getTags().toArray());
-    assertEquals(0, out.get(0).getAnnotations().size());
-    assertEquals(4, out.get(0).getDimensions().size());
+    assertEquals(4, out.get(0).getAnnotations().size());
+    assertNull(out.get(0).getDimensions());
     assertEquals("Really long description with a line break here: \n end of description",
-        out.get(0).getDimensions().get("description").get(0));
-    assertEquals("deployment-event", out.get(0).getDimensions().get("type").get(0));
-    assertEquals("INFO", out.get(0).getDimensions().get("severity").get(0));
-    assertEquals("value", out.get(0).getDimensions().get("somerandomannotation").get(0));
+        out.get(0).getAnnotations().get("description"));
+    assertEquals("deployment-event", out.get(0).getAnnotations().get("type"));
+    assertEquals("INFO", out.get(0).getAnnotations().get("severity"));
+    assertEquals("value", out.get(0).getAnnotations().get("somerandomannotation"));
   }
 
   @Test
@@ -84,10 +84,10 @@ public class EventDecoderTest {
     assertEquals("Event name for testing", out.get(0).getName());
     assertEquals(2, out.get(0).getHosts().size());
     assertArrayEquals(new String[] {"app1", "app2"}, out.get(0).getHosts().toArray());
-    assertEquals(4, out.get(0).getDimensions().size());
-    assertEquals(0, out.get(0).getAnnotations().size());
-    assertEquals("deployment-event", out.get(0).getDimensions().get("type").get(0));
-    assertEquals("INFO", out.get(0).getDimensions().get("severity").get(0));
+    assertEquals(2, out.get(0).getAnnotations().size());
+    assertEquals("deployment-event", out.get(0).getAnnotations().get("type"));
+    assertEquals("INFO", out.get(0).getAnnotations().get("severity"));
+    assertEquals(2, out.get(0).getAnnotations().size());
     assertArrayEquals(new String[] {"foo", "bar", "baz"}, out.get(0).getDimensions().get("multi").toArray());
     assertArrayEquals(new String[] {"foo2", "bar2"}, out.get(0).getDimensions().get("multi2").toArray());
   }
@@ -107,13 +107,12 @@ public class EventDecoderTest {
     assertArrayEquals(new String[] {"app1", "app2", "app3", "app4"}, out.get(0).getHosts().toArray());
     assertEquals(2, out.get(0).getTags().size());
     assertArrayEquals(new String[] {"eventtag1", "eventtag2"}, out.get(0).getTags().toArray());
-    assertEquals(0, out.get(0).getAnnotations().size());
-    assertEquals(4, out.get(0).getDimensions().size());
+    assertEquals(4, out.get(0).getAnnotations().size());
     assertEquals("Really long description with a line break here: \n end of description",
-        out.get(0).getDimensions().get("description").get(0));
-    assertEquals("deployment-event", out.get(0).getDimensions().get("type").get(0));
-    assertEquals("INFO", out.get(0).getDimensions().get("severity").get(0));
-    assertEquals("value", out.get(0).getDimensions().get("somerandomannotation").get(0));
+        out.get(0).getAnnotations().get("description"));
+    assertEquals("deployment-event", out.get(0).getAnnotations().get("type"));
+    assertEquals("INFO", out.get(0).getAnnotations().get("severity"));
+    assertEquals("value", out.get(0).getAnnotations().get("somerandomannotation"));
   }
 
   @Test
@@ -131,12 +130,12 @@ public class EventDecoderTest {
     assertArrayEquals(new String[] {"app1", "app2", "app3", "app4"}, out.get(0).getHosts().toArray());
     assertEquals(2, out.get(0).getTags().size());
     assertArrayEquals(new String[] {"eventtag1", "eventtag2"}, out.get(0).getTags().toArray());
-    assertEquals(0, out.get(0).getAnnotations().size());
+    assertEquals(4, out.get(0).getAnnotations().size());
     assertEquals("Really long description with a line break here: \n end of description",
-        out.get(0).getDimensions().get("description").get(0));
-    assertEquals("deployment-event", out.get(0).getDimensions().get("type").get(0));
-    assertEquals("INFO", out.get(0).getDimensions().get("severity").get(0));
-    assertEquals("value", out.get(0).getDimensions().get("somerandomannotation").get(0));
+        out.get(0).getAnnotations().get("description"));
+    assertEquals("deployment-event", out.get(0).getAnnotations().get("type"));
+    assertEquals("INFO", out.get(0).getAnnotations().get("severity"));
+    assertEquals("value", out.get(0).getAnnotations().get("somerandomannotation"));
   }
 
   @Test
