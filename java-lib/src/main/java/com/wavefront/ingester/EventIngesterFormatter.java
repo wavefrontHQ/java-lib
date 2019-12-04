@@ -69,21 +69,13 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
           event.getTags().add(annotation.getValue());
           break;
         default:
-          Map<String, List<String>> dimensions = event.getDimensions();
-          if (dimensions != null && dimensions.containsKey(annotation.getKey())) {
-            dimensions.get(annotation.getKey()).add(annotation.getValue());
-          } else if (event.getAnnotations().containsKey(annotation.getKey())) {
-            // multi-value annotations should be moved to dimensions
-            if (dimensions == null) {
-              event.setDimensions(new HashMap<>());
-            }
-            List<String> multivalue = new ArrayList<>();
-            multivalue.add(event.getAnnotations().remove(annotation.getKey()));
-            multivalue.add(annotation.getValue());
-            event.getDimensions().put(annotation.getKey(), multivalue);
-          } else {
-            event.getAnnotations().put(annotation.getKey(), annotation.getValue());
+          if (event.getDimensions() == null) {
+            event.setDimensions(new HashMap<>());
           }
+          if (!event.getDimensions().containsKey(annotation.getKey())) {
+            event.getDimensions().put(annotation.getKey(), new ArrayList<>());
+          }
+          event.getDimensions().get(annotation.getKey()).add(annotation.getValue());
       }
     }
     // if no end time specified, we assume it's an instant event
