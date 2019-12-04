@@ -191,6 +191,4 @@ public class EventDecoderTest {
     assertNull(out.get(0).getTags());
     assertEquals(0, out.get(0).getAnnotations().size());
   }
-
-
 }
