@@ -1,7 +1,7 @@
 package com.wavefront.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import wavefront.report.Event;
+import wavefront.report.ReportEvent;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,10 +12,10 @@ import java.util.Map;
  *
  * @author vasily@wavefront.com
  */
-public class EventDTO implements Serializable {
-  private Event event;
+public class Event implements Serializable {
+  private ReportEvent event;
 
-  public EventDTO(Event event) {
+  public Event(ReportEvent event) {
     this.event = event;
   }
 

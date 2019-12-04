@@ -1,6 +1,6 @@
 package com.wavefront.ingester;
 
-import wavefront.report.Event;
+import wavefront.report.ReportEvent;
 
 import java.util.List;
 
@@ -11,12 +11,12 @@ import java.util.List;
  *
  * @author vasily@wavefront.com
  */
-public class EventDecoder implements ReportableEntityDecoder<String, Event> {
+public class EventDecoder implements ReportableEntityDecoder<String, ReportEvent> {
 
   public static final String EVENT = "@Event";
   public static final String ONGOING_EVENT = "@OngoingEvent";
 
-  private static final AbstractIngesterFormatter<Event> FORMAT =
+  private static final AbstractIngesterFormatter<ReportEvent> FORMAT =
       EventIngesterFormatter.newBuilder()
           .whiteSpace()
           .appendCaseSensitiveLiterals(new String[]{EVENT, ONGOING_EVENT}).whiteSpace()
@@ -30,8 +30,8 @@ public class EventDecoder implements ReportableEntityDecoder<String, Event> {
   }
 
   @Override
-  public void decode(String msg, List<Event> out, String customerId) {
-    Event event = FORMAT.drive(msg, "default", "default");
+  public void decode(String msg, List<ReportEvent> out, String customerId) {
+    ReportEvent event = FORMAT.drive(msg, "default", "default");
     if (out != null) {
       out.add(event);
     }

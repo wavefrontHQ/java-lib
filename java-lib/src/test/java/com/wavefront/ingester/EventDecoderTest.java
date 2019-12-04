@@ -2,7 +2,7 @@ package com.wavefront.ingester;
 
 import org.junit.Assert;
 import org.junit.Test;
-import wavefront.report.Event;
+import wavefront.report.ReportEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,21 +21,21 @@ public class EventDecoderTest {
 
   @Test(expected = RuntimeException.class)
   public void testDecodeEventWithIncorrectCaseThrows() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@event 1569423200123 1569423260123 \"Event name for testing\"", out);
     Assert.fail("Invalid event literal didn't throw");
   }
 
   @Test(expected = RuntimeException.class)
   public void testDecodeEventWithIncorrectLiteralThrows() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("Event 1569423200123 1569423260123 \"Event name for testing\"", out);
     Assert.fail("Invalid event literal didn't throw");
   }
 
   @Test(expected = RuntimeException.class)
   public void testDecodeEventWithIncorrectNameThrows() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 1569423260123 \"Event name for testing\"",
         out);
     Assert.fail("Invalid event name didn't throw");
@@ -43,14 +43,14 @@ public class EventDecoderTest {
 
   @Test(expected = RuntimeException.class)
   public void testDecodeEventWithIncorrectKvPairsThrows() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 \"Event name for testing\" invalid kv pairs", out);
     Assert.fail("Invalid event kv pairs didn't throw");
   }
 
   @Test
   public void testDecodeBasicEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 \"Event name for testing\" " +
         "type=deployment-event host=app1 severity=INFO host=app2 tag=eventtag1 host=app3 " +
         "description=\"Really long description with a line break here: \n end of description\" " +
@@ -73,7 +73,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeBasicEventWithQuotedIdentifiers() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 \"Event name for testing\" " +
         "\"type\"=\"deployment-event\" host=\"app1\" severity=INFO \"host\"=app2 tag=eventtag1 host=app3 " +
         "description=\"Really long description with a line break here: \n end of description\" " +
@@ -96,7 +96,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeBasicInstantEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 \"Event name for testing\" " +
         "type=deployment-event host=app1 severity=INFO host=app2 tag=eventtag1 host=app3 " +
         "description=\"Really long description with a line break here: \n end of description\" " +
@@ -119,7 +119,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeBasicOngoingEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@OngoingEvent 1569423200123 \"Event name for testing\" " +
         "type=deployment-event host=app1 severity=INFO host=app2 tag=eventtag1 host=app3 " +
         "description=\"Really long description with a line break here: \n end of description\" " +
@@ -142,7 +142,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeMinimumViableEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 \"Event name for testing\"", out);
     assertEquals(1, out.size());
     assertEquals(startTs, out.get(0).getStartTime().longValue());
@@ -155,7 +155,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeMinimumViableEventWithUnquotedName() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 Event_name_for_testing", out);
     assertEquals(1, out.size());
     assertEquals(startTs, out.get(0).getStartTime().longValue());
@@ -168,7 +168,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeMinimumViableInstantEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 \"Event name for testing\"", out);
     assertEquals(1, out.size());
     assertEquals(startTs, out.get(0).getStartTime().longValue());
@@ -181,7 +181,7 @@ public class EventDecoderTest {
 
   @Test
   public void testDecodeMinimumViableOngoingEvent() {
-    List<Event> out = new ArrayList<>();
+    List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@OngoingEvent 1569423200123 \"Event name for testing\"", out);
     assertEquals(1, out.size());
     assertEquals(startTs, out.get(0).getStartTime().longValue());

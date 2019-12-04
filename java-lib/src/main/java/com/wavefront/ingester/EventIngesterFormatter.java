@@ -2,7 +2,7 @@ package com.wavefront.ingester;
 
 import org.antlr.v4.runtime.Token;
 import wavefront.report.Annotation;
-import wavefront.report.Event;
+import wavefront.report.ReportEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import static com.wavefront.ingester.EventDecoder.ONGOING_EVENT;
  *
  * @author vasily@wavefront.com.
  */
-public class EventIngesterFormatter extends AbstractIngesterFormatter<Event> {
+public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEvent> {
 
   private EventIngesterFormatter(List<FormatterElement> elements) {
     super(elements);
@@ -26,7 +26,7 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<Event> {
   /**
    * A builder pattern to create a format for the report point parse.
    */
-  public static class EventIngesterFormatBuilder extends IngesterFormatBuilder<Event> {
+  public static class EventIngesterFormatBuilder extends IngesterFormatBuilder<ReportEvent> {
 
     @Override
     public EventIngesterFormatter build() {
@@ -34,16 +34,16 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<Event> {
     }
   }
 
-  public static IngesterFormatBuilder<Event> newBuilder() {
+  public static IngesterFormatBuilder<ReportEvent> newBuilder() {
     return new EventIngesterFormatBuilder();
   }
 
   @Override
-  public Event drive(String input, String defaultHostName, String customerId,
+  public ReportEvent drive(String input, String defaultHostName, String customerId,
                      @Nullable List<String> customSourceTags) {
     Queue<Token> queue = getQueue(input);
 
-    final Event event = new Event();
+    final ReportEvent event = new ReportEvent();
     event.setAnnotations(new HashMap<>());
     EventWrapper wrapper = new EventWrapper(event);
     try {
@@ -77,6 +77,6 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<Event> {
     if (event.getEndTime() == null && !wrapper.getLiteral().equals(ONGOING_EVENT)) {
       event.setEndTime(event.getStartTime() + 1);
     }
-    return Event.newBuilder(event).build();
+    return ReportEvent.newBuilder(event).build();
   }
 }

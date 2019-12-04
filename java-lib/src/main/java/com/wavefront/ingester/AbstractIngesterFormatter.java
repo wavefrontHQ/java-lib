@@ -33,9 +33,9 @@ import javax.validation.constraints.NotNull;
 
 import queryserver.parser.DSWrapperLexer;
 import wavefront.report.Annotation;
-import wavefront.report.Event;
 import wavefront.report.Histogram;
 import wavefront.report.HistogramType;
+import wavefront.report.ReportEvent;
 import wavefront.report.ReportPoint;
 import wavefront.report.ReportSourceTag;
 import wavefront.report.Span;
@@ -311,11 +311,11 @@ public abstract class AbstractIngesterFormatter<T> {
   }
 
   protected static class EventWrapper extends AbstractWrapper {
-    Event event;
+    ReportEvent event;
     private String literal;
     private List<Annotation> annotations = new ArrayList<>();
 
-    EventWrapper(Event event) {
+    EventWrapper(ReportEvent event) {
       this.event = event;
     }
 

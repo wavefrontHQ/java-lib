@@ -92,7 +92,7 @@ protocol Reporting {
     array<string> annotations = {}; // might be empty
   }
 
-  record Event {
+  record ReportEvent {
     string name;
     long startTime;
     union {null, long} endTime = null;
