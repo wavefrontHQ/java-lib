@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import static com.wavefront.ingester.EventDecoder.ONGOING_EVENT;
-
 /**
  * Ingestion formatter for events.
  *
@@ -88,8 +86,8 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
           }
       }
     }
-    // if no end time specified but it's not an ongoing event, we assume it's an instant event
-    if (event.getEndTime() == null && !wrapper.getLiteral().equals(ONGOING_EVENT)) {
+    // if no end time specified, we assume it's an instant event
+    if (event.getEndTime() == null || event.getEndTime() == 0) {
       event.setEndTime(event.getStartTime() + 1);
     }
     return ReportEvent.newBuilder(event).build();

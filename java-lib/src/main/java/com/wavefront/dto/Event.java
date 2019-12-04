@@ -40,6 +40,11 @@ public class Event implements Serializable {
   }
 
   @JsonProperty
+  public Map<String, List<String>> getDimensions() {
+    return event.getDimensions();
+  }
+
+  @JsonProperty
   public List<String> getHosts() {
     return event.getHosts();
   }

@@ -139,29 +139,6 @@ public class EventDecoderTest {
   }
 
   @Test
-  public void testDecodeBasicOngoingEvent() {
-    List<ReportEvent> out = new ArrayList<>();
-    decoder.decode("@OngoingEvent 1569423200123 \"Event name for testing\" " +
-        "type=deployment-event host=app1 severity=INFO host=app2 tag=eventtag1 host=app3 " +
-        "description=\"Really long description with a line break here: \n end of description\" " +
-        "tag=eventtag2 host=app4 somerandomannotation=value", out);
-    assertEquals(1, out.size());
-    assertEquals(startTs, out.get(0).getStartTime().longValue());
-    assertNull(out.get(0).getEndTime());
-    assertEquals("Event name for testing", out.get(0).getName());
-    assertEquals(4, out.get(0).getHosts().size());
-    assertArrayEquals(new String[] {"app1", "app2", "app3", "app4"}, out.get(0).getHosts().toArray());
-    assertEquals(2, out.get(0).getTags().size());
-    assertArrayEquals(new String[] {"eventtag1", "eventtag2"}, out.get(0).getTags().toArray());
-    assertEquals(4, out.get(0).getAnnotations().size());
-    assertEquals("Really long description with a line break here: \n end of description",
-        out.get(0).getAnnotations().get("description"));
-    assertEquals("deployment-event", out.get(0).getAnnotations().get("type"));
-    assertEquals("INFO", out.get(0).getAnnotations().get("severity"));
-    assertEquals("value", out.get(0).getAnnotations().get("somerandomannotation"));
-  }
-
-  @Test
   public void testDecodeMinimumViableEvent() {
     List<ReportEvent> out = new ArrayList<>();
     decoder.decode("@Event 1569423200123 1569423260123 \"Event name for testing\"", out);
@@ -194,19 +171,6 @@ public class EventDecoderTest {
     assertEquals(1, out.size());
     assertEquals(startTs, out.get(0).getStartTime().longValue());
     assertEquals(startTs + 1, out.get(0).getEndTime().longValue());
-    assertEquals("Event name for testing", out.get(0).getName());
-    assertEquals(0, out.get(0).getHosts().size());
-    assertNull(out.get(0).getTags());
-    assertEquals(0, out.get(0).getAnnotations().size());
-  }
-
-  @Test
-  public void testDecodeMinimumViableOngoingEvent() {
-    List<ReportEvent> out = new ArrayList<>();
-    decoder.decode("@OngoingEvent 1569423200123 \"Event name for testing\"", out);
-    assertEquals(1, out.size());
-    assertEquals(startTs, out.get(0).getStartTime().longValue());
-    assertNull(out.get(0).getEndTime());
     assertEquals("Event name for testing", out.get(0).getName());
     assertEquals(0, out.get(0).getHosts().size());
     assertNull(out.get(0).getTags());

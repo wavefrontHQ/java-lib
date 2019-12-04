@@ -7,19 +7,18 @@ import java.util.List;
 /**
  * Span decoder that takes in data in the following format:
  *
- * { @Event|@OngoingEvent } startTimeMillis [endTimeMillis] eventName [annotations]
+ * { @Event } startTimeMillis [endTimeMillis] eventName [annotations]
  *
  * @author vasily@wavefront.com
  */
 public class EventDecoder implements ReportableEntityDecoder<String, ReportEvent> {
 
   public static final String EVENT = "@Event";
-  public static final String ONGOING_EVENT = "@OngoingEvent";
 
   private static final AbstractIngesterFormatter<ReportEvent> FORMAT =
       EventIngesterFormatter.newBuilder()
           .whiteSpace()
-          .appendCaseSensitiveLiterals(new String[]{EVENT, ONGOING_EVENT}).whiteSpace()
+          .appendCaseSensitiveLiterals(new String[]{EVENT}).whiteSpace()
           .appendTimestamp().whiteSpace()
           .appendOptionalEndTimestamp().whiteSpace()
           .appendName().whiteSpace()

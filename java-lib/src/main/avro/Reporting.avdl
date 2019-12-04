@@ -95,7 +95,7 @@ protocol Reporting {
   record ReportEvent {
     string name;
     long startTime;
-    union {null, long} endTime = null;
+    long endTime;
     map<string> annotations;
     array<string> hosts = [];
     union {null, array<string>} tags = null;
