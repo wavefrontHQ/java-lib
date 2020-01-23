@@ -16,6 +16,21 @@ import java.util.function.Supplier;
  */
 public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEvent> {
 
+  private EventIngesterFormatter(List<FormatterElement<ReportEvent>> elements) {
+    super(elements);
+  }
+
+  public static class EventIngesterFormatBuilder extends IngesterFormatBuilder<ReportEvent> {
+    @Override
+    public EventIngesterFormatter build() {
+      return new EventIngesterFormatter(elements);
+    }
+  }
+
+  public static IngesterFormatBuilder<ReportEvent> newBuilder() {
+    return new EventIngesterFormatBuilder();
+  }
+
   @Override
   public ReportEvent drive(String input, Supplier<String> defaultHostNameSupplier,
                            String customerId, @Nullable List<String> customSourceTags) {
@@ -62,20 +77,5 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
       event.setEndTime(event.getStartTime() + 1);
     }
     return ReportEvent.newBuilder(event).build();
-  }
-
-  private EventIngesterFormatter(List<FormatterElement<ReportEvent>> elements) {
-    super(elements);
-  }
-
-  public static class EventIngesterFormatBuilder extends IngesterFormatBuilder<ReportEvent> {
-    @Override
-    public EventIngesterFormatter build() {
-      return new EventIngesterFormatter(elements);
-    }
-  }
-
-  public static IngesterFormatBuilder<ReportEvent> newBuilder() {
-    return new EventIngesterFormatBuilder();
   }
 }

@@ -31,7 +31,7 @@ public class ReportSourceTagDecoder implements ReportableEntityDecoder<String, R
       ReportSourceTagIngesterFormatter.newBuilder().
           caseSensitiveLiterals(ImmutableList.of(SOURCE_TAG_LITERAL, SOURCE_DESCRIPTION_LITERAL),
               ReportSourceTagDecoder::setOperation).
-          annotationMap(ReportSourceTagDecoder::setAnnotations, 2).
+          annotationMap(ReportSourceTagDecoder::setKeywords, 2).
           textList(ReportSourceTag::setAnnotations).
           build();
 
@@ -61,7 +61,7 @@ public class ReportSourceTagDecoder implements ReportableEntityDecoder<String, R
     }
   }
 
-  private static void setAnnotations(ReportSourceTag target, Map<String, String> annotations) {
+  private static void setKeywords(ReportSourceTag target, Map<String, String> annotations) {
     String action = annotations.get(ACTION);
     if (action == null) {
       throw new IllegalArgumentException("No 'action' provided");

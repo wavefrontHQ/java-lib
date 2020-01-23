@@ -15,6 +15,21 @@ import java.util.function.Supplier;
  */
 public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
 
+  private SpanIngesterFormatter(List<FormatterElement<Span>> elements) {
+    super(elements);
+  }
+
+  public static class SpanFormatBuilder extends IngesterFormatBuilder<Span> {
+    @Override
+    public SpanIngesterFormatter build() {
+      return new SpanIngesterFormatter(elements);
+    }
+  }
+
+  public static IngesterFormatBuilder<Span> newBuilder() {
+    return new SpanFormatBuilder();
+  }
+
   @Override
   public Span drive(String input, Supplier<String> defaultHostNameSupplier, String customerId,
                     @Nullable List<String> customSourceTags) {
@@ -75,20 +90,5 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
       throw new RuntimeException("traceId can't be null: " + input);
     }
     return Span.newBuilder(span).build();
-  }
-
-  private SpanIngesterFormatter(List<FormatterElement<Span>> elements) {
-    super(elements);
-  }
-
-  public static class SpanFormatBuilder extends IngesterFormatBuilder<Span> {
-    @Override
-    public SpanIngesterFormatter build() {
-      return new SpanIngesterFormatter(elements);
-    }
-  }
-
-  public static IngesterFormatBuilder<Span> newBuilder() {
-    return new SpanFormatBuilder();
   }
 }

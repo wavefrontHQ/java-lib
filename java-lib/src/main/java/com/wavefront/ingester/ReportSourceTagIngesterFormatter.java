@@ -15,6 +15,14 @@ import java.util.function.Supplier;
  */
 public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<ReportSourceTag> {
 
+  private ReportSourceTagIngesterFormatter(List<FormatterElement<ReportSourceTag>> elements) {
+    super(elements);
+  }
+
+  public static SourceTagIngesterFormatBuilder newBuilder() {
+    return new SourceTagIngesterFormatBuilder();
+  }
+
   @Override
   public ReportSourceTag drive(String input, Supplier<String> defaultHostNameSupplier,
                                String customerId, List<String> customerSourceTags) {
@@ -42,18 +50,10 @@ public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<
     return ReportSourceTag.newBuilder(sourceTag).build();
   }
 
-  private ReportSourceTagIngesterFormatter(List<FormatterElement<ReportSourceTag>> elements) {
-    super(elements);
-  }
-
   public static class SourceTagIngesterFormatBuilder extends IngesterFormatBuilder<ReportSourceTag> {
     @Override
     public ReportSourceTagIngesterFormatter build() {
       return new ReportSourceTagIngesterFormatter(elements);
     }
-  }
-
-  public static SourceTagIngesterFormatBuilder newBuilder() {
-    return new SourceTagIngesterFormatBuilder();
   }
 }

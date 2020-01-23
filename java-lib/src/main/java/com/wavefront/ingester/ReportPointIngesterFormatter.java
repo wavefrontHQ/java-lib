@@ -21,7 +21,7 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
     super(elements);
   }
 
-  public static class ReportPointFormatBuilder extends IngesterFormatBuilder<ReportPoint> {
+  public static class ReportPointIngesterFormatBuilder extends IngesterFormatBuilder<ReportPoint> {
     @Override
     public ReportPointIngesterFormatter build() {
       return new ReportPointIngesterFormatter(elements);
@@ -29,12 +29,12 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
   }
 
   public static IngesterFormatBuilder<ReportPoint> newBuilder() {
-    return new ReportPointFormatBuilder();
+    return new ReportPointIngesterFormatBuilder();
   }
 
   @Override
-  public ReportPoint drive(String input, Supplier<String> defaultHostName, String customerId,
-                           @Nullable List<String> customSourceTags) {
+  public ReportPoint drive(String input, Supplier<String> defaultHostNameSupplier,
+                           String customerId, @Nullable List<String> customSourceTags) {
     ReportPoint point = new ReportPoint();
     point.setTable(customerId);
     // if the point has a timestamp, this would be overriden
@@ -88,7 +88,7 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
       }
     }
     if (host == null) {
-      host = defaultHostName.get();
+      host = defaultHostNameSupplier.get();
     }
     point.setHost(host);
     return ReportPoint.newBuilder(point).build();

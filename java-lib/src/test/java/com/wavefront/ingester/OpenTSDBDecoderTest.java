@@ -23,8 +23,7 @@ public class OpenTSDBDecoderTest {
     customSourceTags.add("fqdn");
     OpenTSDBDecoder decoder = new OpenTSDBDecoder("localhost", customSourceTags);
     List<ReportPoint> out = new ArrayList<>();
-    decoder.decode("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=vehicle_2554",
-        out);
+    decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=vehicle_2554", out);
     ReportPoint point = out.get(0);
     assertEquals("dummy", point.getTable());
     assertEquals("tsdb.vehicle.charge.battery_level", point.getMetric());
@@ -34,27 +33,27 @@ public class OpenTSDBDecoderTest {
 
     try {
       // need "PUT"
-      decoder.decode("tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=vehicle_2554", out);
+      decoder.decodeReportPoints("tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=vehicle_2554", out);
       fail();
     } catch (Exception ex) {
     }
 
     try {
       // need "timestamp"
-      decoder.decode("put tsdb.vehicle.charge.battery_level 93.123e3 host=vehicle_2554", out);
+      decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level 93.123e3 host=vehicle_2554", out);
       fail();
     } catch (Exception ex) {
     }
 
     try {
       // need "value"
-      decoder.decode("put tsdb.vehicle.charge.battery_level 12345.678 host=vehicle_2554", out);
+      decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level 12345.678 host=vehicle_2554", out);
       fail();
     } catch (Exception ex) {
     }
 
     out = new ArrayList<>();
-    decoder.decode("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3", out);
+    decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3", out);
     point = out.get(0);
     assertEquals("dummy", point.getTable());
     assertEquals("tsdb.vehicle.charge.battery_level", point.getMetric());
@@ -65,7 +64,7 @@ public class OpenTSDBDecoderTest {
     // adaptive timestamp (13-char timestamp is millis).
     out = new ArrayList<>();
     final long now = System.currentTimeMillis();
-    decoder.decode("put tsdb.vehicle.charge.battery_level " + now
+    decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level " + now
         + " 93.123e3", out);
     point = out.get(0);
     assertEquals("dummy", point.getTable());
@@ -75,7 +74,7 @@ public class OpenTSDBDecoderTest {
     assertEquals("localhost", point.getHost());
 
     out = new ArrayList<>();
-    decoder.decode("put tail.kernel.counter.errors 1447394143 0 fqdn=li250-160.members.linode.com  ", out);
+    decoder.decodeReportPoints("put tail.kernel.counter.errors 1447394143 0 fqdn=li250-160.members.linode.com  ", out);
     point = out.get(0);
     assertEquals("dummy", point.getTable());
     assertEquals("tail.kernel.counter.errors", point.getMetric());
@@ -84,7 +83,7 @@ public class OpenTSDBDecoderTest {
     assertEquals("li250-160.members.linode.com", point.getHost());
 
     out = new ArrayList<>();
-    decoder.decode("put df.home-ubuntu-efs.df_complex.free 1447985300 9.22337186120781e+18 fqdn=ip-172-20-0-236.us-west-2.compute.internal  ", out);
+    decoder.decodeReportPoints("put df.home-ubuntu-efs.df_complex.free 1447985300 9.22337186120781e+18 fqdn=ip-172-20-0-236.us-west-2.compute.internal  ", out);
     point = out.get(0);
     assertEquals("dummy", point.getTable());
     assertEquals("df.home-ubuntu-efs.df_complex.free", point.getMetric());
@@ -99,7 +98,7 @@ public class OpenTSDBDecoderTest {
     customSourceTags.add("fqdn");
     OpenTSDBDecoder decoder = new OpenTSDBDecoder("localhost", customSourceTags);
     List<ReportPoint> out = new ArrayList<>();
-    decoder.decode("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=/vehicle_2554-test/GOOD some_tag=/vehicle_2554-test/BAD", out);
+    decoder.decodeReportPoints("put tsdb.vehicle.charge.battery_level 12345.678 93.123e3 host=/vehicle_2554-test/GOOD some_tag=/vehicle_2554-test/BAD", out);
     ReportPoint point = out.get(0);
     assertEquals("dummy", point.getTable());
     assertEquals("tsdb.vehicle.charge.battery_level", point.getMetric());

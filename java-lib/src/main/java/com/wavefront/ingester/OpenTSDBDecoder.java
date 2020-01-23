@@ -14,7 +14,7 @@ import wavefront.report.ReportPoint;
  *
  * @author Clement Pang (clement@wavefront.com).
  */
-public class OpenTSDBDecoder implements ReportableEntityDecoder<String, ReportPoint> {
+public class OpenTSDBDecoder implements Decoder<String> {
 
   private static final AbstractIngesterFormatter<ReportPoint> FORMAT =
       ReportPointIngesterFormatter.newBuilder().
@@ -27,6 +27,10 @@ public class OpenTSDBDecoder implements ReportableEntityDecoder<String, ReportPo
   private final String hostName;
   private List<String> customSourceTags;
 
+  public OpenTSDBDecoder(List<String> customSourceTags) {
+    this("unknown", customSourceTags);
+  }
+
   public OpenTSDBDecoder(String hostName, List<String> customSourceTags) {
     Preconditions.checkNotNull(hostName);
     Preconditions.checkNotNull(customSourceTags);
@@ -35,10 +39,15 @@ public class OpenTSDBDecoder implements ReportableEntityDecoder<String, ReportPo
   }
 
   @Override
-  public void decode(String msg, List<ReportPoint> out, String customerId) {
+  public void decodeReportPoints(String msg, List<ReportPoint> out, String customerId) {
     ReportPoint point = FORMAT.drive(msg, () -> hostName, customerId, customSourceTags);
     if (out != null) {
       out.add(point);
     }
+  }
+
+  @Override
+  public void decodeReportPoints(String msg, List<ReportPoint> out) {
+    decodeReportPoints(msg, out, "dummy");
   }
 }
