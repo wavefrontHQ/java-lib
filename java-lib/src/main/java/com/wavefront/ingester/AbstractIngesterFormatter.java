@@ -177,7 +177,7 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     public void consume(StringParser parser, T target) {
       String token = parser.next();
       if (token == null)
-        throw new RuntimeException ("Missing value");
+        throw new RuntimeException("Value is missing");
       try {
         valueConsumer.accept(target, Double.parseDouble(token));
       } catch (NumberFormatException nef) {
