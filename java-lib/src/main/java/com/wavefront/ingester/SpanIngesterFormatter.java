@@ -1,15 +1,12 @@
 package com.wavefront.ingester;
 
-import org.antlr.v4.runtime.Token;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-
-import javax.annotation.Nullable;
-
 import wavefront.report.Annotation;
 import wavefront.report.Span;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Builder for Span formatter.
@@ -18,54 +15,31 @@ import wavefront.report.Span;
  */
 public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
 
-  private SpanIngesterFormatter(List<FormatterElement> elements) {
-    super(elements);
-  }
-
-  /**
-   * A builder pattern to create a format for span parsing.
-   */
-  public static class SpanIngesterFormatBuilder extends IngesterFormatBuilder<Span> {
-
-    @Override
-    public SpanIngesterFormatter build() {
-      return new SpanIngesterFormatter(elements);
-    }
-  }
-
-  public static IngesterFormatBuilder<Span> newBuilder() {
-    return new SpanIngesterFormatBuilder();
-  }
-
   @Override
-  public Span drive(String input, String defaultHostName, String customerId,
-                           @Nullable List<String> customSourceTags) {
-    Queue<Token> queue = getQueue(input);
-
+  public Span drive(String input, Supplier<String> defaultHostNameSupplier, String customerId,
+                    @Nullable List<String> customSourceTags) {
     Span span = new Span();
     span.setCustomer(customerId);
-    if (defaultHostName != null) {
-      span.setSource(defaultHostName);
-    }
-    AbstractWrapper wrapper = new SpanWrapper(span);
+    StringParser parser = PARSER.get();
+    parser.parse(input);
     try {
-      for (FormatterElement element : elements) {
-        element.consume(queue, wrapper);
+      for (FormatterElement<Span> element : elements) {
+        element.consume(parser, span);
       }
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);
     }
-    if (!queue.isEmpty()) {
-      throw new RuntimeException("Could not parse: " + input);
+    if (parser.hasNext()) {
+      throw new RuntimeException("Unexpected extra input: " + parser.next());
     }
-
     List<Annotation> annotations = span.getAnnotations();
     if (annotations != null) {
       boolean hasTrueSource = false;
       Iterator<Annotation> iterator = annotations.iterator();
       while (iterator.hasNext()) {
         final Annotation annotation = iterator.next();
-        if (customSourceTags != null && !hasTrueSource && customSourceTags.contains(annotation.getKey())) {
+        if (customSourceTags != null && !hasTrueSource &&
+            customSourceTags.contains(annotation.getKey())) {
           span.setSource(annotation.getValue());
         }
         switch (annotation.getKey()) {
@@ -88,7 +62,9 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
         }
       }
     }
-
+    if (span.getSource() == null && defaultHostNameSupplier != null) {
+      span.setSource(defaultHostNameSupplier.get());
+    }
     if (span.getSource() == null) {
       throw new RuntimeException("source can't be null: " + input);
     }
@@ -99,5 +75,20 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
       throw new RuntimeException("traceId can't be null: " + input);
     }
     return Span.newBuilder(span).build();
+  }
+
+  private SpanIngesterFormatter(List<FormatterElement<Span>> elements) {
+    super(elements);
+  }
+
+  public static class SpanFormatBuilder extends IngesterFormatBuilder<Span> {
+    @Override
+    public SpanIngesterFormatter build() {
+      return new SpanIngesterFormatter(elements);
+    }
+  }
+
+  public static IngesterFormatBuilder<Span> newBuilder() {
+    return new SpanFormatBuilder();
   }
 }

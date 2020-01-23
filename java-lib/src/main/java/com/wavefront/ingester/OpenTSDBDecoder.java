@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import wavefront.report.ReportPoint;
 
 /**
@@ -13,49 +14,31 @@ import wavefront.report.ReportPoint;
  *
  * @author Clement Pang (clement@wavefront.com).
  */
-public class OpenTSDBDecoder implements Decoder<String> {
+public class OpenTSDBDecoder implements ReportableEntityDecoder<String, ReportPoint> {
 
-  private final String hostName;
   private static final AbstractIngesterFormatter<ReportPoint> FORMAT =
-      ReportPointIngesterFormatter.newBuilder()
-      .whiteSpace()
-      .appendCaseInsensitiveLiteral("put").whiteSpace()
-      .appendMetricName().whiteSpace()
-      .appendTimestamp().whiteSpace()
-      .appendValue().whiteSpace()
-      .appendAnnotationsConsumer().whiteSpace().build();
+      ReportPointIngesterFormatter.newBuilder().
+          caseInsensitiveLiterals(ImmutableList.of("put")).
+          text(ReportPoint::setMetric).
+          timestamp(ReportPoint::setTimestamp).
+          value(ReportPoint::setValue).
+          annotationMap(ReportPoint::setAnnotations).
+          build();
+  private final String hostName;
   private List<String> customSourceTags;
-
-  public OpenTSDBDecoder(List<String> customSourceTags) {
-    this.hostName = "unknown";
-    Preconditions.checkNotNull(customSourceTags);
-    this.customSourceTags = customSourceTags;
-  }
 
   public OpenTSDBDecoder(String hostName, List<String> customSourceTags) {
     Preconditions.checkNotNull(hostName);
-    this.hostName = hostName;
     Preconditions.checkNotNull(customSourceTags);
+    this.hostName = hostName;
     this.customSourceTags = customSourceTags;
   }
 
   @Override
-  public void decodeReportPoints(String msg, List<ReportPoint> out, String customerId) {
-    ReportPoint point = FORMAT.drive(msg, hostName, customerId, customSourceTags);
+  public void decode(String msg, List<ReportPoint> out, String customerId) {
+    ReportPoint point = FORMAT.drive(msg, () -> hostName, customerId, customSourceTags);
     if (out != null) {
       out.add(point);
     }
-  }
-
-  @Override
-  public void decodeReportPoints(String msg, List<ReportPoint> out) {
-    ReportPoint point = FORMAT.drive(msg, hostName, "dummy", customSourceTags);
-    if (out != null) {
-      out.add(point);
-    }
-  }
-
-  public String getDefaultHostName() {
-    return this.hostName;
   }
 }
