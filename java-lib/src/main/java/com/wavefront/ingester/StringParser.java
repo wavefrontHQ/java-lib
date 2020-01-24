@@ -11,6 +11,9 @@ import javax.annotation.Nullable;
  * @author vasily@wavefront.com
  */
 public class StringParser {
+  private static final String EQ_TOKEN = "=";
+  private static final String WEIGHT_TOKEN = "#";
+
   private int currentIndex = 0;
   private final String input;
   private String peek = null;
@@ -68,53 +71,53 @@ public class StringParser {
     }
     if (currentIndex >= input.length()) return null;
     char currentChar = input.charAt(currentIndex);
-    if (isQuote(currentChar)) {
+    currentIndex++;
+    if (currentChar == '\"' || currentChar == '\'') {
       return parseAsQuoted(currentChar);
-    } else if (isTokenCharacter(currentChar)) {
-      currentIndex++;
-      return Character.toString(currentChar);
+    } else if (currentChar == '=') {
+      return EQ_TOKEN;
+    } else if (currentChar == '#') {
+      return WEIGHT_TOKEN;
     } else {
       return parseAsNonQuoted();
     }
   }
 
   private String parseAsQuoted(char quoteChar) {
-    int matchingQuoteIndex = currentIndex + 1;
-    boolean hasEscapedQuotes = false;
-    boolean isEscapedQuote;
-    do {
-      int index = input.indexOf(quoteChar, matchingQuoteIndex);
+    int index = input.indexOf(quoteChar, currentIndex);
+    if (index == -1) throw new RuntimeException("Unmatched quote character: (" + quoteChar + ")");
+    int startIndex = currentIndex;
+    currentIndex = index + 1;
+    if (input.charAt(index - 1) != '\\') {
+      // no escaped quotes, can return immediately
+      return input.substring(startIndex, index);
+    }
+    StringBuilder unquoted = new StringBuilder(index - startIndex + 16);
+    boolean escapedQuote = true;
+    while (escapedQuote) {
+      unquoted.append(input, startIndex, index - 1);
+      unquoted.append(quoteChar);
+      index = input.indexOf(quoteChar, currentIndex);
+      startIndex = currentIndex;
+      currentIndex = index + 1;
       if (index == -1) throw new RuntimeException("Unmatched quote character: (" + quoteChar + ")");
-      matchingQuoteIndex = index + 1;
-      isEscapedQuote = input.charAt(index - 1) == '\\';
-      if (isEscapedQuote) hasEscapedQuotes = true;
-    } while (isEscapedQuote);
-    String unquoted = input.substring(currentIndex + 1, matchingQuoteIndex - 1);
-    currentIndex = matchingQuoteIndex;
-    if (!hasEscapedQuotes) return unquoted;
-    return unquoted.replace("\\" + quoteChar, Character.toString(quoteChar));
+      escapedQuote = input.charAt(index - 1) == '\\';
+    }
+    return unquoted.append(input, startIndex, index).toString();
   }
 
   private String parseAsNonQuoted() {
     int indexOfSeparator = indexOfAnySeparator(input, currentIndex);
     int endOfToken = indexOfSeparator == -1 ? input.length() : indexOfSeparator;
-    String result = input.substring(currentIndex, endOfToken);
+    String result = input.substring(currentIndex - 1, endOfToken);
     currentIndex = endOfToken;
     return result;
-  }
-
-  private static boolean isTokenCharacter(char ch) {
-    return ch == '=' || ch == '#';
-  }
-
-  private static boolean isQuote(char ch) {
-    return ch == '\"' || ch == '\'';
   }
 
   private static int indexOfAnySeparator(String input, int startIndex) {
     for (int i = startIndex; i < input.length(); i++) {
       char ch = input.charAt(i);
-      if (ch == ' ' || ch == '\t' || ch == '=') return i;
+      if (ch == ' ' || ch == '=' || ch == '\t') return i;
     }
     return -1;
   }

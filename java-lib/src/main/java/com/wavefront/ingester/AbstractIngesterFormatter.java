@@ -192,8 +192,8 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       List<Double> bins = new ArrayList<>();
       while (WEIGHT.equals(parser.peek())) {
         parser.next(); // skip the # token
-        counts.add(parse(parser.next(), "centroid weight").intValue());
-        bins.add(parse(parser.next(), "centroid value"));
+        counts.add(parse(parser.next(), "centroid weight", true).intValue());
+        bins.add(parse(parser.next(), "centroid value", false).doubleValue());
       }
       if (counts.size() == 0) throw new RuntimeException("Empty histogram (no centroids)");
       Histogram histogram = (Histogram) target.get("value");
@@ -201,12 +201,12 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       histogram.setBins(bins);
     }
 
-    private static Double parse(@Nullable String toParse, String name) {
+    private static Number parse(@Nullable String toParse, String name, boolean asInteger) {
       if (toParse == null) {
         throw new RuntimeException("Unexpected end of line, expected: " + name);
       }
       try {
-        return Double.parseDouble(toParse);
+        return asInteger ? Integer.parseInt(toParse) : Double.parseDouble(toParse);
       } catch (NumberFormatException nef) {
         throw new RuntimeException("Expected: " + name + ", got: " + toParse);
       }
