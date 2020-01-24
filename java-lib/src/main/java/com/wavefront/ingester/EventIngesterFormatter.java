@@ -35,8 +35,7 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
   public ReportEvent drive(String input, Supplier<String> defaultHostNameSupplier,
                            String customerId, @Nullable List<String> customSourceTags) {
     final ReportEvent event = new ReportEvent();
-    StringParser parser = PARSER.get();
-    parser.parse(input);
+    StringParser parser = new StringParser(input);
 
     event.setAnnotations(new HashMap<>());
 

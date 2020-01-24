@@ -35,8 +35,7 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
                     @Nullable List<String> customSourceTags) {
     Span span = new Span();
     span.setCustomer(customerId);
-    StringParser parser = PARSER.get();
-    parser.parse(input);
+    StringParser parser = new StringParser(input);
     try {
       for (FormatterElement<Span> element : elements) {
         element.consume(parser, span);

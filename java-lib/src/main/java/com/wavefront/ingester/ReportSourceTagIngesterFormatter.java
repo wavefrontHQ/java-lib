@@ -27,8 +27,7 @@ public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<
   public ReportSourceTag drive(String input, Supplier<String> defaultHostNameSupplier,
                                String customerId, List<String> customerSourceTags) {
     ReportSourceTag sourceTag = new ReportSourceTag();
-    StringParser parser = PARSER.get();
-    parser.parse(input);
+    StringParser parser = new StringParser(input);
     try {
       for (FormatterElement<ReportSourceTag> element : elements) {
         element.consume(parser, sourceTag);
