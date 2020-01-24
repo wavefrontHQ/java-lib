@@ -75,6 +75,6 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
     if (event.getEndTime() == null || event.getEndTime() == 0) {
       event.setEndTime(event.getStartTime() + 1);
     }
-    return ReportEvent.newBuilder(event).build();
+    return event;
   }
 }

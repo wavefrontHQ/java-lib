@@ -1,5 +1,10 @@
 package com.wavefront.ingester;
 
+import com.google.common.base.Preconditions;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * A lightweight parser custom-tailored to suit all of our supported line protocols.
  *
@@ -13,7 +18,8 @@ public class StringParser {
   /**
    * @param input string to parse at instance creation
    */
-  public StringParser(String input) {
+  public StringParser(@Nonnull String input) {
+    Preconditions.checkNotNull(input);
     this.input = input;
     this.currentIndex = 0;
   }
@@ -21,12 +27,12 @@ public class StringParser {
   /**
    * Retrieves the next available token, but does not advance the further, so multiple
    * calls to peek() return the same value. The value is cached so performance
-   * penalty is negligible.
+   * penalty for multiple peek() calls is negligible.
    *
-   * @return next available token or null if end of line was reached
+   * @return next available token or null if end of line is reached
    */
+  @Nullable
   public String peek() {
-    if (input == null) throw new IllegalStateException("parse() must be called first");
     if (peek == null) {
       peek = advance();
     }
@@ -45,14 +51,16 @@ public class StringParser {
   /**
    * Retrieves the next available token and advances further.
    *
-   * @return next available token or null if end of line was reached
+   * @return next available token or null if end of line is reached
    */
+  @Nullable
   public String next() {
     String token = peek();
     peek = null;
     return token;
   }
 
+  @Nullable
   private String advance() {
     while (currentIndex < input.length() && Character.isWhitespace(input.charAt(currentIndex))) {
       // skip whitespace if any

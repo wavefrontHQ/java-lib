@@ -31,8 +31,8 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
   }
 
   @Override
-  public Span drive(String input, Supplier<String> defaultHostNameSupplier, String customerId,
-                    @Nullable List<String> customSourceTags) {
+  public Span drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
+                    String customerId, @Nullable List<String> customSourceTags) {
     Span span = new Span();
     span.setCustomer(customerId);
     StringParser parser = new StringParser(input);
@@ -88,6 +88,6 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
     if (span.getTraceId() == null) {
       throw new RuntimeException("traceId can't be null: " + input);
     }
-    return Span.newBuilder(span).build();
+    return span;
   }
 }

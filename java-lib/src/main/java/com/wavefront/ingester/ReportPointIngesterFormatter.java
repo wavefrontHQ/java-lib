@@ -90,6 +90,6 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
       host = defaultHostNameSupplier.get();
     }
     point.setHost(host);
-    return ReportPoint.newBuilder(point).build();
+    return point;
   }
 }

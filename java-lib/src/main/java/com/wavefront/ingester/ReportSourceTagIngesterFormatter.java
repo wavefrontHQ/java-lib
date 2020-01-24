@@ -4,6 +4,7 @@ import wavefront.report.ReportSourceTag;
 import wavefront.report.SourceOperationType;
 import wavefront.report.SourceTagAction;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -24,7 +25,7 @@ public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<
   }
 
   @Override
-  public ReportSourceTag drive(String input, Supplier<String> defaultHostNameSupplier,
+  public ReportSourceTag drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
                                String customerId, List<String> customerSourceTags) {
     ReportSourceTag sourceTag = new ReportSourceTag();
     StringParser parser = new StringParser(input);
@@ -46,7 +47,7 @@ public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<
         sourceTag.getAnnotations().size() > 1) {
       throw new IllegalArgumentException("Only one description expected");
     }
-    return ReportSourceTag.newBuilder(sourceTag).build();
+    return sourceTag;
   }
 
   public static class SourceTagIngesterFormatBuilder extends IngesterFormatBuilder<ReportSourceTag> {
