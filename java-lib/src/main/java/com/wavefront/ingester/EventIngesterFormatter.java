@@ -3,6 +3,7 @@ package com.wavefront.ingester;
 import wavefront.report.ReportEvent;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,7 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
                            String customerId, @Nullable List<String> customSourceTags) {
     final ReportEvent event = new ReportEvent();
     StringParser parser = new StringParser(input);
-
+    event.setHosts(new ArrayList<>());
     event.setAnnotations(new HashMap<>());
 
     try {
