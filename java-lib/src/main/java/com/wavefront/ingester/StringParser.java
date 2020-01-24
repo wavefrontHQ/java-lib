@@ -1,31 +1,19 @@
 package com.wavefront.ingester;
 
 /**
- * A lightweight re-usable parser custom-tailored to suit all of our supported line protocols.
+ * A lightweight parser custom-tailored to suit all of our supported line protocols.
  *
  * @author vasily@wavefront.com
  */
 public class StringParser {
   private int currentIndex = 0;
-  private String input = null;
+  private final String input;
   private String peek = null;
-
-  public StringParser() {
-  }
 
   /**
    * @param input string to parse at instance creation
    */
   public StringParser(String input) {
-    parse(input);
-  }
-
-  /**
-   * Re-sets the parser with a new string to be parsed.
-   *
-   * @param input string to parse
-   */
-  public void parse(String input) {
     this.input = input;
     this.currentIndex = 0;
   }

@@ -35,9 +35,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   private static final String DOUBLE_QUOTE_STR = "\"";
   private static final String ESCAPED_DOUBLE_QUOTE_STR = "\\\"";
 
-  protected static final ThreadLocal<StringParser> PARSER =
-      ThreadLocal.withInitial(StringParser::new);
-
   protected final List<FormatterElement<T>> elements;
 
   protected AbstractIngesterFormatter(List<FormatterElement<T>> elements) {

@@ -39,8 +39,7 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
     point.setTable(customerId);
     // if the point has a timestamp, this would be overriden
     point.setTimestamp(Clock.now());
-    StringParser parser = PARSER.get();
-    parser.parse(input);
+    final StringParser parser = new StringParser(input);
 
     try {
       for (FormatterElement<ReportPoint> element : elements) {
