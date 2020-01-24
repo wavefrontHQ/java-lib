@@ -42,10 +42,6 @@ Letters
   : Letter+ Digit*
   ;
 
-Identifier
-  : Letter+ (Letter | Digit | '_')*
-  ;
-
 Quoted
   : '"' ( '\\"' | . )*? '"'
   | '\'' ( '\\\'' | . )*? '\''
@@ -127,3 +123,7 @@ SLASH  : '/' ;
 AT     : '@';
 DELTA  : '\u2206' | '\u0394';
 WS     : [ \t\r\n]+ -> channel(HIDDEN) ;
+
+Identifier
+  : Letter+ (Letter | Digit | '_')*
+  ;
