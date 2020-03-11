@@ -17,9 +17,9 @@ import java.util.regex.Pattern;
 abstract class WavefrontMetricsProcessor implements MetricProcessor<Void> {
   private static final Pattern SIMPLE_NAMES = Pattern.compile("[^a-zA-Z0-9_.\\-~]");
   private final boolean prependGroupName;
-  private final boolean clear;
   private final boolean sendZeroCounters;
   private final boolean sendEmptyHistograms;
+  final boolean clear;
 
   /**
    * @param prependGroupName    If true, metrics have their group name prepended when flushed.
@@ -163,7 +163,7 @@ abstract class WavefrontMetricsProcessor implements MetricProcessor<Void> {
     return "";
   }
 
-  private String getName(MetricName name) {
+  String getName(MetricName name) {
     if (prependGroupName && name.getGroup() != null && !name.getGroup().equals("")) {
       return sanitize(name.getGroup() + "." + name.getName());
     }
