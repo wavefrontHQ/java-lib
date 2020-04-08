@@ -222,8 +222,8 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
 
   private void upsertReporterMetrics() {
     Map<String, Double> gauges = new HashMap<>();
-    gauges.put("metrics.failed", metricsFailedToSend.doubleValue());
-    gauges.put("metrics.generated", metricsGeneratedLastPass.doubleValue());
+    gauges.put("yammer-metrics.failed", metricsFailedToSend.doubleValue());
+    gauges.put("yammer-metrics.generated", metricsGeneratedLastPass.doubleValue());
     upsertGauges("java-lib.metrics.http", gauges);
   }
 
@@ -311,7 +311,7 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
       metricsGeneratedLastPass.incrementAndGet();
     } catch (Exception e) {
       metricsFailedToSend.incrementAndGet();
-      logger.log(Level.SEVERE, "Unable to process entry and pass to the metrics processor", e);
+      logger.log(Level.WARNING, "Unable to process entry and pass to the metrics processor", e);
     }
   }
 

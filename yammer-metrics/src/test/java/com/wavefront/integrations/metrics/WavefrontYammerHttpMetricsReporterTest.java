@@ -181,8 +181,8 @@ public class WavefrontYammerHttpMetricsReporterTest {
     runReporter();
     assertThat(inputMetrics, hasSize(wavefrontYammerHttpMetricsReporter.getMetricsGeneratedLastPass()));
     assertThat(inputMetrics, not(hasItem(MatchesPattern.matchesPattern("\".* .*\".* source=\"test\""))));
-    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.metrics.failed\"")));
-    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.metrics.generated\"")));
+    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.yammer-metrics.failed\"")));
+    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.yammer-metrics.generated\"")));
   }
 
 
@@ -197,8 +197,8 @@ public class WavefrontYammerHttpMetricsReporterTest {
     assertThat(inputMetrics, hasSize(wavefrontYammerHttpMetricsReporter.getMetricsGeneratedLastPass()));
     assertEquals(1, wavefrontYammerHttpMetricsReporter.getMetricsFailedToSend());
     assertThat(inputMetrics, not(hasItem(MatchesPattern.matchesPattern("\".* .*\".* source=\"test\""))));
-    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.metrics.failed\"")));
-    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.metrics.generated\"")));
+    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.yammer-metrics.failed\"")));
+    assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.yammer-metrics.generated\"")));
   }
 
   @Test(timeout = 2000)
