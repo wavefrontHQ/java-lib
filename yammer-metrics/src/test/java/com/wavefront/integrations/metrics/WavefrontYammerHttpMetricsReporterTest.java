@@ -185,7 +185,6 @@ public class WavefrontYammerHttpMetricsReporterTest {
     assertThat(inputMetrics, hasItem(startsWith("\"java-lib.metrics.http.yammer-metrics.generated\"")));
   }
 
-
   @Test(timeout = 2000)
   public void testSendPartialBundle() throws Exception {
     innerSetUp(true, null, false, true, false);
