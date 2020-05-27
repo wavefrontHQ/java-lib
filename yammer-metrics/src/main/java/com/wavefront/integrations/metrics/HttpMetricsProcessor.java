@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +53,8 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
     private int secondaryPort = 2878;
     private Supplier<Long> timeSupplier = System::currentTimeMillis;
     private Map<String, String> sdkInternalTags = Maps.newConcurrentMap();
+    private TimeUnit timeUnit = TimeUnit.SECONDS;
+    private int flushInterval = 1;
 
     public Builder withEndpoint(String hostname, int port) {
       this.hostname = hostname;
@@ -106,6 +109,12 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
       return this;
     }
 
+    public Builder withFlushInterval(TimeUnit timeUnit, int flushInterval) {
+      this.timeUnit = timeUnit;
+      this.flushInterval = flushInterval;
+      return this;
+    }
+
     public HttpMetricsProcessor build() {
       if (this.batchSize > this.queueSize)
         throw new IllegalArgumentException("Batch size cannot be larger than queue sizes");
@@ -122,12 +131,12 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
     WavefrontClientFactory factory = new WavefrontClientFactory();
     factory.addClient(
         "proxy://" + builder.hostname + ":" + builder.metricsPort,
-        builder.batchSize, builder.queueSize, null, null, true,
+        builder.batchSize, builder.queueSize, builder.flushInterval, builder.timeUnit, null, true,
         builder.sdkInternalTags);
 
     if (builder.secondaryHostname != null) {
       factory.addClient("proxy://" + builder.secondaryHostname + ":" + builder.secondaryPort,
-          builder.batchSize, builder.queueSize, null, null, true,
+          builder.batchSize, builder.queueSize, builder.flushInterval, builder.timeUnit, null, true,
           builder.sdkInternalTags);
     }
     this.wavefrontSender = factory.getClient();

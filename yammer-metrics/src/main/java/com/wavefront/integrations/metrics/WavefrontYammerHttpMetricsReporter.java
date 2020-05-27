@@ -81,6 +81,8 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
     private boolean clear = false;
     private int queueSize = 50_000;
     private int batchSize = 10_000;
+    private TimeUnit timeUnit = TimeUnit.SECONDS;
+    private int flushInterval = 1;
 
     public Builder withMetricsRegistry(MetricsRegistry metricsRegistry) {
       this.metricsRegistry = metricsRegistry;
@@ -160,6 +162,12 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
       return this;
     }
 
+    public Builder withFlushInterval(TimeUnit timeUnit, int flushInterval) {
+      this.timeUnit = timeUnit;
+      this.flushInterval = flushInterval;
+      return this;
+    }
+
     public WavefrontYammerHttpMetricsReporter build() throws IOReactorException {
       if (StringUtils.isBlank(this.name)) {
         throw new IllegalArgumentException("Reporter must have a human readable name.");
@@ -187,6 +195,7 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
         withTimeSupplier(builder.timeSupplier).
         withDefaultSource(builder.defaultSource).
         withSdkInternalTags(builder.sdkInternalTags).
+        withFlushInterval(builder.timeUnit, builder.flushInterval).
         sendZeroCounters(builder.sendZeroCounters);
     if (builder.secondaryHostname != null) {
       httpMetricsProcessorBuilder.withSecondaryEndpoint(builder.secondaryHostname,builder.secondaryPort);
