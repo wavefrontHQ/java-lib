@@ -1,6 +1,7 @@
 package com.wavefront.integrations.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import com.wavefront.common.MetricsToTimeseries;
 import com.wavefront.common.Pair;
 import com.wavefront.metrics.MetricTranslator;
@@ -72,6 +73,7 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
     private Supplier<Long> timeSupplier = System::currentTimeMillis;
     private boolean prependGroupName = false;
     private MetricTranslator metricTranslator = null;
+    private Map<String, String> sdkInternalTags = Maps.newConcurrentMap();
     private boolean includeJvmMetrics = false;
     private boolean includeReporterMetrics = true;
     private boolean sendZeroCounters = false;
@@ -153,6 +155,11 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
       return this;
     }
 
+    public Builder withSdkInternalTags(Map<String, String> tags) {
+      this.sdkInternalTags.putAll(tags);
+      return this;
+    }
+
     public WavefrontYammerHttpMetricsReporter build() throws IOReactorException {
       if (StringUtils.isBlank(this.name)) {
         throw new IllegalArgumentException("Reporter must have a human readable name.");
@@ -179,6 +186,7 @@ public class WavefrontYammerHttpMetricsReporter extends AbstractReporter impleme
         clearHistogramsAndTimers(builder.clear).
         withTimeSupplier(builder.timeSupplier).
         withDefaultSource(builder.defaultSource).
+        withSdkInternalTags(builder.sdkInternalTags).
         sendZeroCounters(builder.sendZeroCounters);
     if (builder.secondaryHostname != null) {
       httpMetricsProcessorBuilder.withSecondaryEndpoint(builder.secondaryHostname,builder.secondaryPort);

@@ -1,5 +1,6 @@
 package com.wavefront.integrations.metrics;
 
+import com.google.common.collect.Maps;
 import com.tdunning.math.stats.Centroid;
 import com.wavefront.common.TaggedMetricName;
 import com.wavefront.sdk.common.Pair;
@@ -50,6 +51,7 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
     private String secondaryHostname;
     private int secondaryPort = 2878;
     private Supplier<Long> timeSupplier = System::currentTimeMillis;
+    private Map<String, String> sdkInternalTags = Maps.newConcurrentMap();
 
     public Builder withEndpoint(String hostname, int port) {
       this.hostname = hostname;
@@ -99,6 +101,11 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
       return this;
     }
 
+    public Builder withSdkInternalTags(Map<String, String> tags) {
+      this.sdkInternalTags.putAll(tags);
+      return this;
+    }
+
     public HttpMetricsProcessor build() {
       if (this.batchSize > this.queueSize)
         throw new IllegalArgumentException("Batch size cannot be larger than queue sizes");
@@ -115,11 +122,13 @@ public class HttpMetricsProcessor extends WavefrontMetricsProcessor {
     WavefrontClientFactory factory = new WavefrontClientFactory();
     factory.addClient(
         "proxy://" + builder.hostname + ":" + builder.metricsPort,
-        builder.batchSize, builder.queueSize, null, null);
+        builder.batchSize, builder.queueSize, null, null, true,
+        builder.sdkInternalTags);
 
     if (builder.secondaryHostname != null) {
       factory.addClient("proxy://" + builder.secondaryHostname + ":" + builder.secondaryPort,
-          builder.batchSize, builder.queueSize, null, null);
+          builder.batchSize, builder.queueSize, null, null, true,
+          builder.sdkInternalTags);
     }
     this.wavefrontSender = factory.getClient();
   }
