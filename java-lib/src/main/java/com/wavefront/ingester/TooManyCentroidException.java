@@ -9,4 +9,9 @@ public class TooManyCentroidException extends RuntimeException {
   public TooManyCentroidException(String message) {
     super(message);
   }
+
+  public TooManyCentroidException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
 }

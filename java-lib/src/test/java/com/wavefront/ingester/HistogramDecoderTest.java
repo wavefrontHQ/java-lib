@@ -12,6 +12,8 @@ import wavefront.report.Histogram;
 import wavefront.report.ReportPoint;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.wavefront.ingester.IngesterContext.DEFAULT_CENTROIDS_COUNT_LIMIT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -308,5 +310,56 @@ public class HistogramDecoderTest {
 
     ReportPoint p = out.get(0);
     assertNotNull(p.getAnnotations());
+  }
+
+  @Test(expected = TooManyCentroidException.class)
+  public void testDefaultThrowTooManyCentroidsException() {
+    HistogramDecoder decoder = new HistogramDecoder();
+    List<ReportPoint> out = new ArrayList<>();
+
+    // Assert we are limit to 100.
+    assertEquals(DEFAULT_CENTROIDS_COUNT_LIMIT, 100);
+
+    // Test 100 centroids can pass.
+    StringBuilder histogramSB = new StringBuilder();
+    histogramSB.append("!M 1471988653");
+    for (int i = 1; i <= DEFAULT_CENTROIDS_COUNT_LIMIT; i++) {
+      histogramSB.append(" #").append(i).append(" ").append((double) i);
+    }
+    histogramSB.append(" TestMetric source=Test key=value");
+    decoder.decodeReportPoints(histogramSB.toString(), out, "customer");
+    assertThat(out).isNotEmpty();
+    out.clear();
+
+    // Test 101 centroids will throw TooManyCentroidException.
+    histogramSB = new StringBuilder();
+    histogramSB.append("!M 1471988653");
+    for (int i = 1; i <= DEFAULT_CENTROIDS_COUNT_LIMIT + 1; i++) {
+      histogramSB.append(" #").append(i).append(" ").append((double) i);
+    }
+    histogramSB.append(" TestMetric source=Test key=value");
+
+    decoder.decodeReportPoints(histogramSB.toString(), out, "customer");
+  }
+
+  @Test(expected = TooManyCentroidException.class)
+  public void testCustomThrowTooManyCentroidsException() {
+    HistogramDecoder decoder = new HistogramDecoder();
+    List<ReportPoint> out = new ArrayList<>();
+
+    int centroidsLimit = 50;
+
+    // Test we using custom IngesterContext with centroids limit to 50.
+    IngesterContext ingesterContext = new IngesterContext.Builder().withTargetHistogramAccuracy(32).
+            throwIfTooManyHistogramCentroids(centroidsLimit).build();
+
+    StringBuilder histogramSB = new StringBuilder();
+    histogramSB.append("!M 1471988653");
+    for (int i = 1; i <= centroidsLimit + 1; i++) {
+      histogramSB.append(" #").append(i).append(" ").append((double) i);
+    }
+    histogramSB.append(" TestMetric source=Test key=value");
+
+    decoder.decodeReportPoints(histogramSB.toString(), out, "customer", ingesterContext);
   }
 }

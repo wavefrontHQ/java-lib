@@ -50,6 +50,8 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
           element.consume(parser, point);
         }
       }
+    } catch (TooManyCentroidException ex) {
+      throw new TooManyCentroidException("Could not parse: " + input, ex);
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);
     }
