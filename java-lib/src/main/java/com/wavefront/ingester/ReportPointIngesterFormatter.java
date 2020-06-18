@@ -36,9 +36,6 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
   public ReportPoint drive(String input, Supplier<String> defaultHostNameSupplier,
                            String customerId, @Nullable List<String> customSourceTags,
                            @Nullable IngesterContext ingesterContext) {
-    if (ingesterContext != null) {
-      this.setIngesterContext(ingesterContext);
-    }
     ReportPoint point = new ReportPoint();
     point.setTable(customerId);
     // if the point has a timestamp, this would be overriden
@@ -47,7 +44,11 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
 
     try {
       for (FormatterElement<ReportPoint> element : elements) {
-        element.consume(parser, point);
+        if (ingesterContext != null) {
+          element.consume(parser, point, ingesterContext);
+        } else {
+          element.consume(parser, point);
+        }
       }
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);

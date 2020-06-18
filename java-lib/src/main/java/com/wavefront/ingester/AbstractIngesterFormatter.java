@@ -41,20 +41,17 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   private static final String DOUBLE_QUOTE_STR = "\"";
   private static final String ESCAPED_DOUBLE_QUOTE_STR = "\\\"";
 
-  protected final List<FormatterElement<T>> elements;
+  private static final IngesterContext DEFAULT_INGESTER_CONTEXT = new IngesterContext.Builder().build();
 
-  protected static IngesterContext ingesterContext = new IngesterContext.Builder().build();
+  protected final List<FormatterElement<T>> elements;
 
   protected AbstractIngesterFormatter(List<FormatterElement<T>> elements) {
     this.elements = elements;
   }
 
-  public void setIngesterContext(IngesterContext ingesterContextToSet) {
-    ingesterContext = ingesterContextToSet;
-  }
-
   protected interface FormatterElement<T> {
     void consume(StringParser parser, T target);
+    void consume(StringParser parser, T target, IngesterContext ingesterContext);
   }
 
   /**
@@ -165,6 +162,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       String text = parser.next();
       if (!isAllowedLiteral(text)) throw new RuntimeException("'" + text +
           "' is not allowed here!");
@@ -190,6 +192,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       String token = parser.next();
       if (token == null)
         throw new RuntimeException("Value is missing");
@@ -200,7 +207,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       }
     }
   }
-
 
   /**
    * Optimize the means/counts pair if necessary .
@@ -230,8 +236,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
         rewrite(means, counts, size, storageAccuracy);
       }
     }
-
-    ingesterContext.reset();
   }
 
   /**
@@ -260,12 +264,16 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     }
   }
 
-
   public static class Centroids<T extends SpecificRecordBase> implements FormatterElement<T> {
     private static final String WEIGHT = "#";
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       List<Integer> counts = new ArrayList<>();
       List<Double> bins = new ArrayList<>();
 
@@ -314,6 +322,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Long timestamp = parseTimestamp(parser, optional, raw);
       if (timestamp != null) timestampConsumer.accept(target, timestamp);
     }
@@ -328,6 +341,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       List<String> list = new ArrayList<>();
       while (parser.hasNext()) {
         list.add(parser.next());
@@ -358,6 +376,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Map<String, String> stringMap = null;
       if (stringMapProvider != null) {
         stringMap = stringMapProvider.apply(target);
@@ -384,6 +407,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Map<String, List<String>> multimap = new HashMap<>();
       while (parser.hasNext()) {
         parseKeyValuePair(parser, (k, v) -> {
@@ -406,6 +434,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     @Override
     public void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
+    @Override
+    public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       List<Annotation> annotationList = new ArrayList<>();
       while (parser.hasNext() && predicate.test(parser.peek())) {
         parseKeyValuePair(parser, (k, v) -> annotationList.add(new Annotation(k, v)));

@@ -36,9 +36,6 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
   public ReportEvent drive(String input, Supplier<String> defaultHostNameSupplier,
                            String customerId, @Nullable List<String> customSourceTags,
                            @Nullable IngesterContext ingesterContext) {
-    if (ingesterContext != null) {
-      this.setIngesterContext(ingesterContext);
-    }
     final ReportEvent event = new ReportEvent();
     StringParser parser = new StringParser(input);
     event.setHosts(new ArrayList<>());
@@ -46,7 +43,11 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
 
     try {
       for (FormatterElement<ReportEvent> element : elements) {
-        element.consume(parser, event);
+        if (ingesterContext != null) {
+          element.consume(parser, event, ingesterContext);
+        } else {
+          element.consume(parser, event);
+        }
       }
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);

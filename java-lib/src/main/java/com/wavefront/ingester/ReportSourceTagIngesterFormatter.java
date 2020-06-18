@@ -28,14 +28,15 @@ public class ReportSourceTagIngesterFormatter extends AbstractIngesterFormatter<
   public ReportSourceTag drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
                                String customerId, @Nullable List<String> customerSourceTags,
                                @Nullable IngesterContext ingesterContext) {
-    if (ingesterContext != null) {
-      this.setIngesterContext(ingesterContext);
-    }
     ReportSourceTag sourceTag = new ReportSourceTag();
     StringParser parser = new StringParser(input);
     try {
       for (FormatterElement<ReportSourceTag> element : elements) {
-        element.consume(parser, sourceTag);
+        if (ingesterContext != null) {
+          element.consume(parser, sourceTag, ingesterContext);
+        } else {
+          element.consume(parser, sourceTag);
+        }
       }
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);
