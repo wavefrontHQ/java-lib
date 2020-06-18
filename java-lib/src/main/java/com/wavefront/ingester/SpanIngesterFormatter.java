@@ -1,6 +1,9 @@
 package com.wavefront.ingester;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import wavefront.report.Annotation;
+import wavefront.report.ReportPoint;
 import wavefront.report.Span;
 
 import javax.annotation.Nullable;
@@ -32,7 +35,11 @@ public class SpanIngesterFormatter extends AbstractIngesterFormatter<Span> {
 
   @Override
   public Span drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
-                    String customerId, @Nullable List<String> customSourceTags) {
+                    String customerId, @Nullable List<String> customSourceTags,
+                    @Nullable IngesterContext ingesterContext) {
+    if (ingesterContext != null) {
+      this.setIngesterContext(ingesterContext);
+    }
     Span span = new Span();
     span.setCustomer(customerId);
     StringParser parser = new StringParser(input);

@@ -34,7 +34,11 @@ public class EventIngesterFormatter extends AbstractIngesterFormatter<ReportEven
 
   @Override
   public ReportEvent drive(String input, Supplier<String> defaultHostNameSupplier,
-                           String customerId, @Nullable List<String> customSourceTags) {
+                           String customerId, @Nullable List<String> customSourceTags,
+                           @Nullable IngesterContext ingesterContext) {
+    if (ingesterContext != null) {
+      this.setIngesterContext(ingesterContext);
+    }
     final ReportEvent event = new ReportEvent();
     StringParser parser = new StringParser(input);
     event.setHosts(new ArrayList<>());

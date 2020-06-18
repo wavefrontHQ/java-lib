@@ -20,6 +20,8 @@ public interface Decoder<T> {
    */
   void decodeReportPoints(T msg, List<ReportPoint> out, String customerId);
 
+  void decodeReportPoints(T msg, List<ReportPoint> out, String customerId, IngesterContext ingesterContext);
+
   /**
    * Certain decoders support decoding the customer id from the input line itself.
    *

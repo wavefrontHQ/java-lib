@@ -1,6 +1,7 @@
 package com.wavefront.ingester;
 
 import com.wavefront.common.Clock;
+
 import wavefront.report.ReportPoint;
 
 import javax.annotation.Nullable;
@@ -33,7 +34,11 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
 
   @Override
   public ReportPoint drive(String input, Supplier<String> defaultHostNameSupplier,
-                           String customerId, @Nullable List<String> customSourceTags) {
+                           String customerId, @Nullable List<String> customSourceTags,
+                           @Nullable IngesterContext ingesterContext) {
+    if (ingesterContext != null) {
+      this.setIngesterContext(ingesterContext);
+    }
     ReportPoint point = new ReportPoint();
     point.setTable(customerId);
     // if the point has a timestamp, this would be overriden

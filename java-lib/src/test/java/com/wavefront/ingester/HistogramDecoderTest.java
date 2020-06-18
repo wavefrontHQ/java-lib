@@ -24,7 +24,8 @@ public class HistogramDecoderTest {
     HistogramDecoder decoder = new HistogramDecoder();
     List<ReportPoint> out = new ArrayList<>();
 
-    decoder.decodeReportPoints("!M 1471988653 #3 123.237 TestMetric source=Test key=value", out, "customer");
+    decoder.decodeReportPoints("!M 1471988653 #3 123.237 TestMetric source=Test key=value", out, "customer",
+        new IngesterContext.Builder().withTargetHistogramAccuracy(32).throwIfTooManyHistogramCentroids(10).build());
 
     assertThat(out).isNotEmpty();
     ReportPoint p = out.get(0);
