@@ -362,4 +362,33 @@ public class HistogramDecoderTest {
 
     decoder.decodeReportPoints(histogramSB.toString(), out, "customer", ingesterContext);
   }
+
+  @Test
+  public void testHistogramOptimization() {
+    HistogramDecoder decoder = new HistogramDecoder();
+    List<ReportPoint> out = new ArrayList<>();
+
+    IngesterContext ingesterContext =
+        new IngesterContext.Builder().withTargetHistogramAccuracy(8).build();
+
+    int centroidsLimit = 50;
+    StringBuilder histogramSB = new StringBuilder();
+    histogramSB.append("!M 1471988653");
+    for (int i = 1; i < centroidsLimit + 1; i++) {
+      histogramSB.append(" #").append(i).append(" ").append((double) i);
+    }
+    histogramSB.append(" TestMetric source=Test key=value");
+
+    decoder.decodeReportPoints(histogramSB.toString(), out, "customer", ingesterContext);
+
+    assertThat(out).isNotEmpty();
+    ReportPoint p = out.get(0);
+    assertThat(p.getValue()).isNotNull();
+    assertThat(p.getValue().getClass()).isEqualTo(Histogram.class);
+
+    Histogram h = (Histogram) p.getValue();
+
+    // Verify we have less centroids after compression.
+    assertThat(centroidsLimit).isGreaterThan(h.getBins().size());
+  }
 }

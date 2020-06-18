@@ -50,7 +50,10 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   }
 
   protected interface FormatterElement<T> {
-    void consume(StringParser parser, T target);
+    default void consume(StringParser parser, T target) {
+      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
+    }
+
     void consume(StringParser parser, T target, IngesterContext ingesterContext);
   }
 
@@ -161,11 +164,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     }
 
     @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
-    }
-
-    @Override
     public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       String text = parser.next();
       if (!isAllowedLiteral(text)) throw new RuntimeException("'" + text +
@@ -188,11 +186,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     Value(BiConsumer<T, Double> valueConsumer) {
       this.valueConsumer = valueConsumer;
-    }
-
-    @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
     }
 
     @Override
@@ -268,11 +261,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     private static final String WEIGHT = "#";
 
     @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
-    }
-
-    @Override
     public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       List<Integer> counts = new ArrayList<>();
       List<Double> bins = new ArrayList<>();
@@ -321,11 +309,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     }
 
     @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
-    }
-
-    @Override
     public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Long timestamp = parseTimestamp(parser, optional, raw);
       if (timestamp != null) timestampConsumer.accept(target, timestamp);
@@ -337,11 +320,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
     StringList(BiConsumer<T, List<String>> stringListConsumer) {
       this.stringListConsumer = stringListConsumer;
-    }
-
-    @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
     }
 
     @Override
@@ -375,11 +353,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     }
 
     @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
-    }
-
-    @Override
     public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Map<String, String> stringMap = null;
       if (stringMapProvider != null) {
@@ -406,11 +379,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     }
 
     @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
-    }
-
-    @Override
     public void consume(StringParser parser, T target, IngesterContext ingesterContext) {
       Map<String, List<String>> multimap = new HashMap<>();
       while (parser.hasNext()) {
@@ -430,11 +398,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
                    Predicate<String> predicate) {
       this.annotationListConsumer = annotationListConsumer;
       this.predicate = predicate;
-    }
-
-    @Override
-    public void consume(StringParser parser, T target) {
-      consume(parser, target, DEFAULT_INGESTER_CONTEXT);
     }
 
     @Override
