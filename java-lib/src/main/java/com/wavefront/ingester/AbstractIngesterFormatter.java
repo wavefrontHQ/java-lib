@@ -22,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import static com.wavefront.ingester.IngesterContext.DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO;
 import static org.apache.commons.lang.StringUtils.containsAny;
 import static org.apache.commons.lang.StringUtils.replace;
 
@@ -203,6 +204,9 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
 
   /**
    * Optimize the means/counts pair if necessary .
+   *
+   * @param means  centroids means
+   * @param counts centroid counts
    */
   public static void optimizeForStorage(@Nullable List<Double> means,
                                         @Nullable List<Integer> counts,
@@ -211,7 +215,7 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       return;
     }
 
-    if /*Too many centroids*/ (size > 5 * storageAccuracy) {
+    if /*Too many centroids*/ (size > DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO * storageAccuracy) {
       rewrite(means, counts, size, storageAccuracy);
     }
 

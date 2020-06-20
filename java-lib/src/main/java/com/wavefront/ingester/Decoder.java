@@ -20,6 +20,15 @@ public interface Decoder<T> {
    */
   void decodeReportPoints(T msg, List<ReportPoint> out, String customerId);
 
+  /**
+   * Decode graphite points and dump them into an output array. The supplied customer id will be set
+   * and no customer id extraction will be attempted.
+   *
+   * @param msg             Message to parse.
+   * @param out             List to output the parsed point.
+   * @param customerId      The customer id to use as the table for the result ReportPoint.
+   * @param ingesterContext The ingester context with extra params for decoding.
+   */
   void decodeReportPoints(T msg, List<ReportPoint> out, String customerId, IngesterContext ingesterContext);
 
   /**

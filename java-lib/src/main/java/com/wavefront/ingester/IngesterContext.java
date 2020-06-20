@@ -1,7 +1,23 @@
 package com.wavefront.ingester;
 
 public class IngesterContext {
+  /**
+   * Compress histogram limit when the count of centroid is larger then this ratio * accuracy.
+   * Default to 2, meaning when the count of centroids is larger then twice of histogram
+   * accuracy, perform the compression.
+   */
+  public static final double DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO = 2.0;
+
+  /**
+   * Default centroids count limit, default to 100, meaning histogram with more then 100
+   * centroids will throw {@link TooManyCentroidException}.
+   */
   public static final int DEFAULT_CENTROIDS_COUNT_LIMIT = 100;
+
+  /**
+   * Default histogram accuracy, used when constructing new T-Digest for compression, and also
+   * controls the threshold for compression as well.
+   */
   public static final int DEFAULT_HISTOGRAM_ACCURACY = 32;
 
   private int histogramCentroidsLimit;
