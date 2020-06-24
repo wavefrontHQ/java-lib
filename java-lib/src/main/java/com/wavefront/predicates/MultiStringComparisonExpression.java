@@ -73,9 +73,6 @@ public class MultiStringComparisonExpression implements EvalExpression {
         return asDouble(annotations.stream().allMatch(x -> cmp.apply(x, arg.getString(entity))));
       case ANY:
         return asDouble(annotations.stream().anyMatch(x -> {
-          System.out.println("x=" + x);
-          System.out.println("arg=" + arg.getString(entity));
-          System.out.println("result = " + cmp.apply(x, arg.getString(entity)));
           return cmp.apply(x, arg.getString(entity));
         }));
         //return asDouble(annotations.stream().anyMatch(x -> cmp.apply(x, arg.getString(entity))));
