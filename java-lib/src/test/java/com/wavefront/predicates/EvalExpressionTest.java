@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author vasily@wavefront.com
  */
-public class PreprocessorPredicateExpressionTest {
+public class EvalExpressionTest {
 
   private final ReportPoint point = ReportPoint.newBuilder().
       setTable("test").
@@ -47,6 +47,14 @@ public class PreprocessorPredicateExpressionTest {
       setEndTime(System.currentTimeMillis() + 1).
       setAnnotations(ImmutableMap.of()).
       build();
+
+  @Test
+  public void testAsPredicate() {
+    assertTrue(Predicates.fromEvalExpression("$value = 1234.5").test(point));
+    assertFalse(Predicates.fromEvalExpression("$value != 1234.5").test(point));
+    assertTrue(Predicates.fromEvalExpression("$duration = 1111").test(span));
+    assertFalse(Predicates.fromEvalExpression("$duration != 1111").test(span));
+  }
 
   @Test
   public void testMath() {
@@ -372,14 +380,6 @@ public class PreprocessorPredicateExpressionTest {
   public void testBadSyntax() {
     // this is not an EvalExpression, string expressions can't be evaluated directly
     parseEvalExpression("{{tagK}}").getValue(null);
-  }
-
-  @Test
-  public void testAsPredicate() {
-    assertTrue(Predicates.fromEvalExpression("$value = 1234.5").test(point));
-    assertFalse(Predicates.fromEvalExpression("$value != 1234.5").test(point));
-    assertTrue(Predicates.fromEvalExpression("$duration = 1111").test(span));
-    assertFalse(Predicates.fromEvalExpression("$duration != 1111").test(span));
   }
 
   private static void assertEq(double d1, double d2) {
