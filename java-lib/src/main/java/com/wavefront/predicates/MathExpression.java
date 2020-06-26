@@ -1,19 +1,19 @@
 package com.wavefront.predicates;
 
-import static com.wavefront.predicates.EvalExpression.asDouble;
-import static com.wavefront.predicates.EvalExpression.isTrue;
+import static com.wavefront.predicates.PredicateEvalExpression.asDouble;
+import static com.wavefront.predicates.PredicateEvalExpression.isTrue;
 
 /**
  * A math expression
  *
  * @author vasily@wavefront.com.
  */
-public class MathExpression implements EvalExpression {
-  private final EvalExpression left;
-  private final EvalExpression right;
+public class MathExpression implements PredicateEvalExpression {
+  private final PredicateEvalExpression left;
+  private final PredicateEvalExpression right;
   private final String op;
 
-  public MathExpression(EvalExpression left, EvalExpression right, String op) {
+  public MathExpression(PredicateEvalExpression left, PredicateEvalExpression right, String op) {
     this.left = left;
     this.right = right;
     this.op = op;

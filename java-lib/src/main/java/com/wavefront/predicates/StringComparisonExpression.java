@@ -8,14 +8,14 @@ import org.apache.commons.lang.StringUtils;
 
 import com.wavefront.common.PatternMatch;
 
-import static com.wavefront.predicates.EvalExpression.asDouble;
+import static com.wavefront.predicates.PredicateEvalExpression.asDouble;
 
 /**
- * Adapter that converts two {@link StringExpression} to {@link EvalExpression}.
+ * Adapter that converts two {@link StringExpression} to {@link PredicateEvalExpression}.
  *
  * @author vasily@wavefront.com.
  */
-public class StringComparisonExpression implements EvalExpression {
+public class StringComparisonExpression implements PredicateEvalExpression {
 
   private final StringExpression left;
   private final StringExpression right;
@@ -34,7 +34,8 @@ public class StringComparisonExpression implements EvalExpression {
     return asDouble(func.apply(left.getString(entity), right.getString(entity)));
   }
 
-  public static EvalExpression of(StringExpression left, StringExpression right, String op) {
+  public static PredicateEvalExpression of(StringExpression left, StringExpression right,
+                                           String op) {
     switch (op) {
       case "=":
       case "equals":

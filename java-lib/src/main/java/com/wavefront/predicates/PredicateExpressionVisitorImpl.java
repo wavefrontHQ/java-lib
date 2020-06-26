@@ -11,14 +11,14 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.wavefront.common.TimeProvider;
 
-import condition.parser.EvalExpressionParser;
-import condition.parser.EvalExpressionBaseVisitor;
+import condition.parser.PredicateExpressionParser;
+import condition.parser.PredicateExpressionBaseVisitor;
 import wavefront.report.ReportPoint;
 import wavefront.report.Span;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.wavefront.predicates.EvalExpression.asDouble;
-import static com.wavefront.predicates.EvalExpression.isTrue;
+import static com.wavefront.predicates.PredicateEvalExpression.asDouble;
+import static com.wavefront.predicates.PredicateEvalExpression.isTrue;
 import static com.wavefront.ingester.AbstractIngesterFormatter.unquote;
 
 /**
@@ -26,16 +26,16 @@ import static com.wavefront.ingester.AbstractIngesterFormatter.unquote;
  *
  * @author vasily@wavefront.com.
  */
-public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Expression> {
+public class PredicateExpressionVisitorImpl extends PredicateExpressionBaseVisitor<BaseExpression> {
   private static final Random RANDOM = new Random();
   private final TimeProvider timeProvider;
 
-  public EvalExpressionVisitorImpl(TimeProvider timeProvider) {
+  public PredicateExpressionVisitorImpl(TimeProvider timeProvider) {
     this.timeProvider = timeProvider;
   }
 
   @Override
-  public Expression visitEvalExpression(EvalExpressionParser.EvalExpressionContext ctx) {
+  public BaseExpression visitEvalExpression(PredicateExpressionParser.EvalExpressionContext ctx) {
     if (ctx == null) {
       throw new ExpressionSyntaxException("Syntax error");
     } else if (ctx.ternary != null) {
@@ -48,11 +48,11 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
       return new MathExpression(eval(ctx.evalExpression(0)), eval(ctx.evalExpression(1)),
           ctx.comparisonOperator().getText().replace(" ", ""));
     } else if (ctx.not != null) {
-      EvalExpression expression = eval(ctx.evalExpression(0));
-      return (EvalExpression) entity -> asDouble(!isTrue(expression.getValue(entity)));
+      PredicateEvalExpression expression = eval(ctx.evalExpression(0));
+      return (PredicateEvalExpression) entity -> asDouble(!isTrue(expression.getValue(entity)));
     } else if (ctx.complement != null) {
-      EvalExpression expression = eval(ctx.evalExpression(0));
-      return (EvalExpression) entity -> ~ (long) expression.getValue(entity);
+      PredicateEvalExpression expression = eval(ctx.evalExpression(0));
+      return (PredicateEvalExpression) entity -> ~ (long) expression.getValue(entity);
     } else if (ctx.multiModifier != null) {
       String scope = firstNonNull(ctx.placeholder().Letters(),
           ctx.placeholder().Identifier()).getText();
@@ -66,37 +66,41 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
       return StringComparisonExpression.of(left, right, ctx.stringComparisonOp().getText());
     } else if (ctx.in != null && ctx.stringExpression().size() > 1) {
       StringExpression left = stringExpression(ctx.stringExpression(0));
-      List<EvalExpression> branches = ctx.stringExpression().
+      List<PredicateEvalExpression> branches = ctx.stringExpression().
           subList(1, ctx.stringExpression().size()).
           stream().
           map(exp -> StringComparisonExpression.of(left, stringExpression(exp), "=")).
           collect(Collectors.toList());
-      return (EvalExpression) entity ->
+      return (PredicateEvalExpression) entity ->
           asDouble(branches.stream().anyMatch(x -> isTrue(x.getValue(entity))));
     } else if (ctx.stringEvalFunc() != null) {
       StringExpression input = stringExpression(ctx.stringExpression(0));
       if (ctx.stringEvalFunc().strLength() != null) {
-        return (EvalExpression) entity -> input.getString(entity).length();
+        return (PredicateEvalExpression) entity -> input.getString(entity).length();
       } else if (ctx.stringEvalFunc().strHashCode() != null) {
         //noinspection UnstableApiUsage
-        return (EvalExpression) entity -> Hashing.murmur3_32().hashString(input.getString(entity),
-            Charsets.UTF_8).asInt();
+        return (PredicateEvalExpression) entity ->
+            Hashing.murmur3_32().hashString(input.getString(entity), Charsets.UTF_8).asInt();
       } else if (ctx.stringEvalFunc().strIsEmpty() != null) {
-        return (EvalExpression) entity -> asDouble(StringUtils.isEmpty(input.getString(entity)));
+        return (PredicateEvalExpression) entity ->
+            asDouble(StringUtils.isEmpty(input.getString(entity)));
       } else if (ctx.stringEvalFunc().strIsNotEmpty() != null) {
-        return (EvalExpression) entity -> asDouble(StringUtils.isNotEmpty(input.getString(entity)));
+        return (PredicateEvalExpression) entity ->
+            asDouble(StringUtils.isNotEmpty(input.getString(entity)));
       } else if (ctx.stringEvalFunc().strIsBlank() != null) {
-        return (EvalExpression) entity -> asDouble(StringUtils.isBlank(input.getString(entity)));
+        return (PredicateEvalExpression) entity ->
+            asDouble(StringUtils.isBlank(input.getString(entity)));
       } else if (ctx.stringEvalFunc().strIsNotBlank() != null) {
-        return (EvalExpression) entity -> asDouble(StringUtils.isNotBlank(input.getString(entity)));
+        return (PredicateEvalExpression) entity ->
+            asDouble(StringUtils.isNotBlank(input.getString(entity)));
       } else if (ctx.stringEvalFunc().strParse() != null) {
-        EvalExpression defaultExp = ctx.stringEvalFunc().strParse().evalExpression() == null ? x -> 0 :
-            eval(ctx.stringEvalFunc().strParse().evalExpression());
-        return (EvalExpression) entity -> {
+        PredicateEvalExpression def = ctx.stringEvalFunc().strParse().evalExpression() == null ?
+            x -> 0 : eval(ctx.stringEvalFunc().strParse().evalExpression());
+        return (PredicateEvalExpression) entity -> {
           try {
             return Double.parseDouble(input.getString(entity));
           } catch (NumberFormatException e) {
-            return defaultExp.getValue(entity);
+            return def.getValue(entity);
           }
         };
       } else {
@@ -105,7 +109,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
     } else if (ctx.propertyAccessor() != null) {
       return getPropertyAccessor(ctx.propertyAccessor().getText());
     } else if (ctx.number() != null) {
-      return (EvalExpression) entity -> getNumber(ctx.number());
+      return (PredicateEvalExpression) entity -> getNumber(ctx.number());
     } else if (ctx.evalExpression(0) != null) {
       return eval(ctx.evalExpression(0));
     } else {
@@ -114,7 +118,8 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitStringExpression(EvalExpressionParser.StringExpressionContext ctx) {
+  public BaseExpression visitStringExpression(
+      PredicateExpressionParser.StringExpressionContext ctx) {
     if (ctx.concat != null) {
       StringExpression left = stringExpression(ctx.stringExpression(0));
       StringExpression right = stringExpression(ctx.stringExpression(1));
@@ -136,9 +141,9 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
         return (StringExpression) entity -> input.getString(entity).
             replaceAll(regex.getString(entity), replacement.getString(entity));
       } else if (ctx.stringFunc().strSubstring() != null) {
-        EvalExpression fromExp = eval(ctx.stringFunc().strSubstring().evalExpression(0));
+        PredicateEvalExpression fromExp = eval(ctx.stringFunc().strSubstring().evalExpression(0));
         if (ctx.stringFunc().strSubstring().evalExpression().size() > 1) {
-          EvalExpression toExp = eval(ctx.stringFunc().strSubstring().evalExpression(1));
+          PredicateEvalExpression toExp = eval(ctx.stringFunc().strSubstring().evalExpression(1));
           return (StringExpression) entity -> input.getString(entity).
               substring((int) fromExp.getValue(entity), (int) toExp.getValue(entity));
         } else {
@@ -146,11 +151,11 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
               substring((int) fromExp.getValue(entity));
         }
       } else if (ctx.stringFunc().strLeft() != null) {
-        EvalExpression index = eval(ctx.stringFunc().strLeft().evalExpression());
+        PredicateEvalExpression index = eval(ctx.stringFunc().strLeft().evalExpression());
         return (StringExpression) entity -> input.getString(entity).
             substring(0, (int) index.getValue(entity));
       } else if (ctx.stringFunc().strRight() != null) {
-        EvalExpression index = eval(ctx.stringFunc().strRight().evalExpression());
+        PredicateEvalExpression index = eval(ctx.stringFunc().strRight().evalExpression());
         return (StringExpression) entity -> {
           String str = input.getString(entity);
           return str.substring(str.length() - (int) index.getValue(entity));
@@ -174,7 +179,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitIff(EvalExpressionParser.IffContext ctx) {
+  public BaseExpression visitIff(PredicateExpressionParser.IffContext ctx) {
     if (ctx == null) {
       throw new ExpressionSyntaxException("Syntax error for if()");
     }
@@ -183,10 +188,11 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitParse(EvalExpressionParser.ParseContext ctx) {
+  public BaseExpression visitParse(PredicateExpressionParser.ParseContext ctx) {
     StringExpression strExp = stringExpression(ctx.stringExpression());
-    EvalExpression defaultExp = ctx.evalExpression() == null ? x -> 0 : eval(ctx.evalExpression());
-    return (EvalExpression) entity -> {
+    PredicateEvalExpression defaultExp = ctx.evalExpression() == null ?
+        x -> 0 : eval(ctx.evalExpression());
+    return (PredicateEvalExpression) entity -> {
       try {
         return Double.parseDouble(strExp.getString(entity));
       } catch (NumberFormatException e) {
@@ -196,7 +202,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitTime(EvalExpressionParser.TimeContext ctx) {
+  public BaseExpression visitTime(PredicateExpressionParser.TimeContext ctx) {
     if (ctx.stringExpression(0) == null) {
       throw new ExpressionSyntaxException("Cannot parse time argument");
     }
@@ -215,57 +221,60 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
     } catch (IllegalArgumentException e) {
       throw new ExpressionSyntaxException("Cannot parse '" + testString + "' as time!");
     }
-    return (EvalExpression) entity ->
+    return (PredicateEvalExpression) entity ->
         Util.parseTextualTimeExact(timeExp.getString(entity),
             timeProvider.currentTimeMillis(), tz);
   }
 
   @Override
-  public Expression visitEvalLength(EvalExpressionParser.EvalLengthContext ctx) {
+  public BaseExpression visitEvalLength(PredicateExpressionParser.EvalLengthContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> exp.getString(entity).length();
+    return (PredicateEvalExpression) entity -> exp.getString(entity).length();
   }
 
   @Override
-  public Expression visitEvalHashCode(EvalExpressionParser.EvalHashCodeContext ctx) {
+  public BaseExpression visitEvalHashCode(PredicateExpressionParser.EvalHashCodeContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
     //noinspection UnstableApiUsage
-    return (EvalExpression) entity -> Hashing.murmur3_32().hashString(exp.getString(entity),
-        Charsets.UTF_8).asInt();
+    return (PredicateEvalExpression) entity ->
+        Hashing.murmur3_32().hashString(exp.getString(entity), Charsets.UTF_8).asInt();
   }
 
   @Override
-  public Expression visitEvalIsEmpty(EvalExpressionParser.EvalIsEmptyContext ctx) {
+  public BaseExpression visitEvalIsEmpty(PredicateExpressionParser.EvalIsEmptyContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> asDouble(StringUtils.isEmpty(exp.getString(entity)));
+    return (PredicateEvalExpression) entity ->
+        asDouble(StringUtils.isEmpty(exp.getString(entity)));
   }
 
   @Override
-  public Expression visitEvalIsNotEmpty(EvalExpressionParser.EvalIsNotEmptyContext ctx) {
+  public BaseExpression visitEvalIsNotEmpty(PredicateExpressionParser.EvalIsNotEmptyContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> asDouble(StringUtils.isNotEmpty(exp.getString(entity)));
+    return (PredicateEvalExpression) entity ->
+        asDouble(StringUtils.isNotEmpty(exp.getString(entity)));
   }
 
   @Override
-  public Expression visitEvalIsBlank(EvalExpressionParser.EvalIsBlankContext ctx) {
+  public BaseExpression visitEvalIsBlank(PredicateExpressionParser.EvalIsBlankContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> asDouble(StringUtils.isBlank(exp.getString(entity)));
+    return (PredicateEvalExpression) entity -> asDouble(StringUtils.isBlank(exp.getString(entity)));
   }
 
   @Override
-  public Expression visitEvalIsNotBlank(EvalExpressionParser.EvalIsNotBlankContext ctx) {
+  public BaseExpression visitEvalIsNotBlank(PredicateExpressionParser.EvalIsNotBlankContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> asDouble(StringUtils.isNotBlank(exp.getString(entity)));
+    return (PredicateEvalExpression) entity ->
+        asDouble(StringUtils.isNotBlank(exp.getString(entity)));
   }
 
   @Override
-  public Expression visitRandom(EvalExpressionParser.RandomContext ctx) {
-    return (EvalExpression) entity -> RANDOM.nextDouble();
+  public BaseExpression visitRandom(PredicateExpressionParser.RandomContext ctx) {
+    return (PredicateEvalExpression) entity -> RANDOM.nextDouble();
   }
 
   @Override
-  public Expression visitAsString(EvalExpressionParser.AsStringContext ctx) {
-    EvalExpression valueExpression = eval(ctx.evalExpression());
+  public BaseExpression visitAsString(PredicateExpressionParser.AsStringContext ctx) {
+    PredicateEvalExpression valueExpression = eval(ctx.evalExpression());
     if (ctx.stringExpression() == null) {
       return (StringExpression) entity -> String.valueOf(valueExpression.getValue(entity));
     } else {
@@ -276,11 +285,11 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitStrIff(EvalExpressionParser.StrIffContext ctx) {
+  public BaseExpression visitStrIff(PredicateExpressionParser.StrIffContext ctx) {
     if (ctx == null) {
       throw new ExpressionSyntaxException("Syntax error for if()");
     }
-    EvalExpression condition = eval(ctx.evalExpression());
+    PredicateEvalExpression condition = eval(ctx.evalExpression());
     StringExpression thenExpression = stringExpression(ctx.stringExpression(0));
     StringExpression elseExpression = stringExpression(ctx.stringExpression(1));
     return (StringExpression) entity ->
@@ -289,19 +298,20 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
             elseExpression.getString(entity);
   }
 
-  private EvalExpression eval(EvalExpressionParser.EvalExpressionContext ctx) {
-    return (EvalExpression) visitEvalExpression(ctx);
+  private PredicateEvalExpression eval(PredicateExpressionParser.EvalExpressionContext ctx) {
+    return (PredicateEvalExpression) visitEvalExpression(ctx);
   }
 
-  private StringExpression stringExpression(EvalExpressionParser.StringExpressionContext ctx) {
+  private StringExpression stringExpression(PredicateExpressionParser.StringExpressionContext ctx) {
     return (StringExpression) visitStringExpression(ctx);
   }
 
-  private EvalExpression iff(EvalExpression cond, EvalExpression thenExp, EvalExpression elseExp) {
+  private PredicateEvalExpression iff(PredicateEvalExpression cond, PredicateEvalExpression thenExp,
+                                      PredicateEvalExpression elseExp) {
     return x -> isTrue(cond.getValue(x)) ? thenExp.getValue(x) : elseExp.getValue(x);
   }
 
-  private EvalExpression getPropertyAccessor(String property) {
+  private PredicateEvalExpression getPropertyAccessor(String property) {
     switch (property) {
       case "value":
         return entity -> {
@@ -341,7 +351,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
     }
   }
 
-  private static double getNumber(EvalExpressionParser.NumberContext numberContext) {
+  private static double getNumber(PredicateExpressionParser.NumberContext numberContext) {
     if (numberContext == null || numberContext.Number() == null) {
       throw new ExpressionSyntaxException("Cannot parse number");
     }

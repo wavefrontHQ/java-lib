@@ -5,5 +5,5 @@ package com.wavefront.predicates;
  *
  * @author vasily@wavefront.com.
  */
-public interface Expression {
+public interface BaseExpression {
 }

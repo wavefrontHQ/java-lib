@@ -4,11 +4,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * An expression that returns a string;.
+ * An expression that returns a string.
  *
  * @author vasily@wavefront.com.
  */
-public interface StringExpression extends Expression {
+public interface StringExpression extends BaseExpression {
 
   /**
    * Get a string value.

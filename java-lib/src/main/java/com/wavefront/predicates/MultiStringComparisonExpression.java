@@ -15,14 +15,14 @@ import wavefront.report.Annotation;
 import wavefront.report.ReportPoint;
 import wavefront.report.Span;
 
-import static com.wavefront.predicates.EvalExpression.asDouble;
+import static com.wavefront.predicates.PredicateEvalExpression.asDouble;
 
 /**
  * An eval expression that compares a collection of strings
  *
  * @author vasily@wavefront.com
  */
-public class MultiStringComparisonExpression implements EvalExpression {
+public class MultiStringComparisonExpression implements PredicateEvalExpression {
 
   private final String scope;
   private final StringExpression arg;
@@ -80,8 +80,8 @@ public class MultiStringComparisonExpression implements EvalExpression {
     }
   }
 
-  public static EvalExpression of(String scope, StringExpression argument,
-                                  PredicateMatchOp matchOp, String op) {
+  public static PredicateEvalExpression of(String scope, StringExpression argument,
+                                           PredicateMatchOp matchOp, String op) {
     switch (op) {
       case "=":
       case "equals":

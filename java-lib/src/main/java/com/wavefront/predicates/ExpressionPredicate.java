@@ -2,17 +2,17 @@ package com.wavefront.predicates;
 
 import java.util.function.Predicate;
 
-import static com.wavefront.predicates.EvalExpression.isTrue;
+import static com.wavefront.predicates.PredicateEvalExpression.isTrue;
 
 /**
- * {@link EvalExpression} to {@link Predicate<T>} adapter.
+ * {@link PredicateEvalExpression} to {@link Predicate<T>} adapter.
  *
  * @author vasily@wavefront.com.
  */
 public class ExpressionPredicate<T> implements Predicate<T> {
-  private final EvalExpression wrapped;
+  private final PredicateEvalExpression wrapped;
 
-  public ExpressionPredicate(EvalExpression wrapped) {
+  public ExpressionPredicate(PredicateEvalExpression wrapped) {
     this.wrapped = wrapped;
   }
 

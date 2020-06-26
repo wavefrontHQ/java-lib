@@ -1,4 +1,4 @@
-grammar EvalExpression;
+grammar PredicateExpression;
 
 import ConditionLexer;
 

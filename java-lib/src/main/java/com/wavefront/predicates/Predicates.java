@@ -8,8 +8,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import com.google.common.annotations.VisibleForTesting;
 import com.wavefront.common.TimeProvider;
 
-import condition.parser.EvalExpressionLexer;
-import condition.parser.EvalExpressionParser;
+import condition.parser.PredicateExpressionLexer;
+import condition.parser.PredicateExpressionParser;
 
 /**
  * Utility class for parsing expressions.
@@ -27,28 +27,31 @@ public abstract class Predicates {
    * @param predicateString expression string to parse.
    * @return predicate
    */
-  public static <T> Predicate<T> fromEvalExpression(String predicateString) {
-    return new ExpressionPredicate<>(parseEvalExpression(predicateString));
+  public static <T> Predicate<T> fromPredicateEvalExpression(String predicateString) {
+    return new ExpressionPredicate<>(parsePredicateEvalExpression(predicateString));
   }
 
   @VisibleForTesting
-  static EvalExpression parseEvalExpression(String predicateString) {
-    return parseEvalExpression(predicateString, System::currentTimeMillis);
+  static PredicateEvalExpression parsePredicateEvalExpression(String predicateString) {
+    return parsePredicateEvalExpression(predicateString, System::currentTimeMillis);
   }
 
   @VisibleForTesting
-  static EvalExpression parseEvalExpression(String predicateString, TimeProvider timeProvider) {
-    EvalExpressionLexer lexer = new EvalExpressionLexer(CharStreams.fromString(predicateString));
+  static PredicateEvalExpression parsePredicateEvalExpression(String predicateString,
+                                                              TimeProvider timeProvider) {
+    PredicateExpressionLexer lexer =
+        new PredicateExpressionLexer(CharStreams.fromString(predicateString));
     lexer.removeErrorListeners();
     ErrorListener errorListener = new ErrorListener();
     lexer.addErrorListener(errorListener);
     CommonTokenStream tokens = new CommonTokenStream(lexer);
-    EvalExpressionParser parser = new EvalExpressionParser(tokens);
+    PredicateExpressionParser parser = new PredicateExpressionParser(tokens);
     parser.removeErrorListeners();
     parser.addErrorListener(errorListener);
-    EvalExpressionVisitorImpl visitor = new EvalExpressionVisitorImpl(timeProvider);
-    EvalExpressionParser.ProgramContext context = parser.program();
-    EvalExpression result = (EvalExpression) context.evalExpression().accept(visitor);
+    PredicateExpressionVisitorImpl visitor = new PredicateExpressionVisitorImpl(timeProvider);
+    PredicateExpressionParser.ProgramContext context = parser.program();
+    PredicateEvalExpression result =
+        (PredicateEvalExpression) context.evalExpression().accept(visitor);
     if (errorListener.getErrors().length() == 0) {
       return result;
     } else {

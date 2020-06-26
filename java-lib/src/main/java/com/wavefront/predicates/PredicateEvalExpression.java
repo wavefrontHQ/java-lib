@@ -5,7 +5,7 @@ package com.wavefront.predicates;
  *
  * @author vasily@wavefront.com.
  */
-public interface EvalExpression extends Expression {
+public interface PredicateEvalExpression extends BaseExpression {
 
   /**
    * Get a double value.
