@@ -171,7 +171,7 @@ public class PredicateExpressionVisitorImpl extends PredicateExpressionBaseVisit
       return visitAsString(ctx.asString());
     } else if (ctx.string() != null) {
       String text = ctx.string().getText();
-      return new TemplateExpression(ctx.string().Quoted() != null ? unquote(text) : text);
+      return new TemplateStringExpression(ctx.string().Quoted() != null ? unquote(text) : text);
     } else if (ctx.stringExpression(0) != null) {
       return visitStringExpression(ctx.stringExpression(0));
     }

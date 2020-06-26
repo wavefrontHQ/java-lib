@@ -12,10 +12,10 @@ import wavefront.report.Span;
  *
  * @author vasily@wavefront.com
  */
-public class TemplateExpression implements StringExpression {
+public class TemplateStringExpression implements StringExpression {
   private final String template;
 
-  public TemplateExpression(String template) {
+  public TemplateStringExpression(String template) {
     this.template = template;
   }
 
