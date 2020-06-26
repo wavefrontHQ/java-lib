@@ -6,17 +6,47 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import wavefront.report.Annotation;
+import wavefront.report.ReportEvent;
 import wavefront.report.ReportPoint;
 import wavefront.report.Span;
 
 import static com.wavefront.predicates.Predicates.parseEvalExpression;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author vasily@wavefront.com
  */
 public class PreprocessorPredicateExpressionTest {
+
+  private final ReportPoint point = ReportPoint.newBuilder().
+      setTable("test").
+      setValue(1234.5).
+      setTimestamp(1592837162000L).
+      setMetric("testMetric").
+      setHost("testHost").
+      setAnnotations(ImmutableMap.of("tagk1", "tagv1", "tagk2", "tagv2",
+          "env", "prod", "dc", "us-west-2")).
+      build();
+  private final Span span = Span.newBuilder().
+      setCustomer("test").
+      setName("testSpanName").
+      setSource("spanSourceName").
+      setSpanId("4217104a-690d-4927-baff-d9aa779414c2").
+      setTraceId("d5355bf7-fc8d-48d1-b761-75b170f396e0").
+      setAnnotations(ImmutableList.of(
+          new Annotation("foo", "bar1-baz"),
+          new Annotation("foo", "bar2-baz"),
+          new Annotation("boo", "baz"))).
+      setStartMillis(1532012145123L).
+      setDuration(1111).
+      build();
+  private final ReportEvent event = ReportEvent.newBuilder().setName("test").
+      setStartTime(System.currentTimeMillis()).
+      setEndTime(System.currentTimeMillis() + 1).
+      setAnnotations(ImmutableMap.of()).
+      build();
 
   @Test
   public void testMath() {
@@ -184,6 +214,13 @@ public class PreprocessorPredicateExpressionTest {
     assertEq(123, parseEvalExpression("parse('123a45', 123)").getValue(null));
     assertEq(0, parseEvalExpression("parse('123a45')").getValue(null));
     assertEq(12345, parseEvalExpression("parse('123a45'.replace('a', ''), 123)").getValue(null));
+    assertEq(1, parseEvalExpression("str(1) equals '1.0'").getValue(null));
+    assertEq(0, parseEvalExpression("str(1) equals '1'").getValue(null));
+    assertEq(1, parseEvalExpression("str(1.9999, '%.2f') equals '2.00'").getValue(null));
+    assertEq(1, parseEvalExpression("str(1.99, '%.2f') equals '1.99'").getValue(null));
+    assertEq(1, parseEvalExpression("str(1234.567, '%09.1f') equals '0001234.6'").getValue(null));
+    assertEq(1, parseEvalExpression("str(12345.67, '%1$,.2f') equals '12,345.67'").getValue(null));
+    assertEq(1, parseEvalExpression("str(parse('12345') / 100) equals '123.45'").getValue(null));
   }
 
   @Test
@@ -219,15 +256,6 @@ public class PreprocessorPredicateExpressionTest {
 
   @Test
   public void testPointExpression() {
-    ReportPoint point = ReportPoint.newBuilder().
-        setTable("test").
-        setValue(1234.5).
-        setTimestamp(1592837162000L).
-        setMetric("testMetric").
-        setHost("testHost").
-        setAnnotations(ImmutableMap.of("tagk1", "tagv1", "tagk2", "tagv2",
-            "env", "prod", "dc", "us-west-2")).
-        build();
     assertEq(1, parseEvalExpression("$value = 1234.5").getValue(point));
     assertEq(0, parseEvalExpression("$value = 1234.0").getValue(point));
     assertEq(1, parseEvalExpression("$timestamp = 1592837162000").getValue(point));
@@ -248,35 +276,30 @@ public class PreprocessorPredicateExpressionTest {
     assertEq(1, parseEvalExpression("$timestamp < time('now')").getValue(point));
     assertEq(0, parseEvalExpression("$timestamp > time('31 seconds ago')").getValue(point));
     assertEq(1, parseEvalExpression("$timestamp < time('2020-06-23', 'UTC')").getValue(point));
-    try {
-      parseEvalExpression("$startMillis > 0").getValue(point);
-      fail();
-    } catch (ClassCastException cce) {
-      // pass
-    }
-    try {
-      parseEvalExpression("$duration > 0").getValue(point);
-      fail();
-    } catch (ClassCastException cce) {
-      // pass
-    }
+  }
+
+  @Test(expected = ExpressionSyntaxException.class)
+  public void testTimeWithInvalidStringThrows() {
+    parseEvalExpression("$timestamp > time('NotAValidString')").getValue(point);
+  }
+
+  @Test(expected = ExpressionSyntaxException.class)
+  public void testUnknownPropertyAccessorThrows() {
+    parseEvalExpression("$unknown > 0").getValue(point);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testStartMillisPropertyAccessorThrowsOnPoints() {
+    parseEvalExpression("$startMillis > 0").getValue(point);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testDurationPropertyAccessorThrowsOnPoints() {
+    parseEvalExpression("$duration > 0").getValue(point);
   }
 
   @Test
   public void testSpanExpression() {
-    Span span = Span.newBuilder().
-        setCustomer("test").
-        setName("testSpanName").
-        setSource("spanSourceName").
-        setSpanId("4217104a-690d-4927-baff-d9aa779414c2").
-        setTraceId("d5355bf7-fc8d-48d1-b761-75b170f396e0").
-        setAnnotations(ImmutableList.of(
-            new Annotation("foo", "bar1-baz"),
-            new Annotation("foo", "bar2-baz"),
-            new Annotation("boo", "baz"))).
-        setStartMillis(1532012145123L).
-        setDuration(1111).
-        build();
     assertEq(1, parseEvalExpression("$duration = 1111").getValue(span));
     assertEq(0, parseEvalExpression("$duration = 1111.1").getValue(span));
     assertEq(1, parseEvalExpression("$startMillis = 1532012145123").getValue(span));
@@ -303,23 +326,60 @@ public class PreprocessorPredicateExpressionTest {
     assertEq(1, parseEvalExpression("{{foo}} all matchesIgnoreCase '*AR*'").getValue(span));
     assertEq(0, parseEvalExpression("{{foo}} all matches '*ar'").getValue(span));
     assertEq(0, parseEvalExpression("{{foo}} all matchesIgnoreCase '*AR'").getValue(span));
+    assertEq(1, parseEvalExpression("{{foo}} all regexMatch '^.*ar.*$'").getValue(span));
+    assertEq(1, parseEvalExpression("{{foo}} any regexMatch '^.*az$'").getValue(span));
+    assertEq(0, parseEvalExpression("{{foo}} any regexMatch '^.*q.*$'").getValue(span));
+    assertEq(1, parseEvalExpression("{{foo}} all regexMatchIgnoreCase '^.*AR*.$'").getValue(span));
+    assertEq(0, parseEvalExpression("{{foo}} all regexMatchIgnoreCase '^.*AR$'").getValue(span));
     assertEq(1, parseEvalExpression("{{foo}} any equals 'bar2-baz'").getValue(span));
     assertEq(1, parseEvalExpression("{{foo}} any equalsIgnoreCase 'bar2-BAZ'").getValue(span));
     assertEq(1, parseEvalExpression("{{sourceName}} all startsWith 'span'").getValue(span));
     assertEq(1, parseEvalExpression("{{spanName}} all startsWith 'test'").getValue(span));
+  }
 
-    try {
-      parseEvalExpression("$timestamp > 0").getValue(span);
-      fail();
-    } catch (ClassCastException cce) {
-      // pass
-    }
-    try {
-      parseEvalExpression("$value > 0").getValue(span);
-      fail();
-    } catch (ClassCastException cce) {
-      // pass
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testTimestampPropertyAccessorThrowsOnSpans() {
+    parseEvalExpression("$timestamp > 0").getValue(span);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValuePropertyAccessorThrowsOnSpans() {
+    parseEvalExpression("$value > 0").getValue(span);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValuePropertyAccessorThrowsOnInvalidObjects() {
+    parseEvalExpression("$value").getValue(event);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testTemplateThrowsOnInvalidObjects() {
+    parseEvalExpression("{{tagK}} = '1'").getValue(event);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMultiStringThrowsOnInvalidObjects() {
+    parseEvalExpression("{{foo}} any matches '*az'").getValue(event);
+  }
+
+  @Test
+  public void testInvalidObject() {
+    // this is ok because we don't need to actually peek into the object itself
+    assertEq(1, parseEvalExpression("1").getValue(event));
+  }
+
+  @Test(expected = ExpressionSyntaxException.class)
+  public void testBadSyntax() {
+    // this is not an EvalExpression, string expressions can't be evaluated directly
+    parseEvalExpression("{{tagK}}").getValue(null);
+  }
+
+  @Test
+  public void testAsPredicate() {
+    assertTrue(Predicates.fromEvalExpression("$value = 1234.5").test(point));
+    assertFalse(Predicates.fromEvalExpression("$value != 1234.5").test(point));
+    assertTrue(Predicates.fromEvalExpression("$duration = 1111").test(span));
+    assertFalse(Predicates.fromEvalExpression("$duration != 1111").test(span));
   }
 
   private static void assertEq(double d1, double d2) {

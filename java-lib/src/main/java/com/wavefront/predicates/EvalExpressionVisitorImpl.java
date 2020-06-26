@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import com.wavefront.common.TimeProvider;
 
 import condition.parser.EvalExpressionParser;
@@ -35,7 +37,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   @Override
   public Expression visitEvalExpression(EvalExpressionParser.EvalExpressionContext ctx) {
     if (ctx == null) {
-      throw new IllegalArgumentException("Syntax error");
+      throw new ExpressionSyntaxException("Syntax error");
     } else if (ctx.ternary != null) {
       return iff(eval(ctx.evalExpression(0)), eval(ctx.evalExpression(1)),
           eval(ctx.evalExpression(2)));
@@ -76,7 +78,9 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
       if (ctx.stringEvalFunc().strLength() != null) {
         return (EvalExpression) entity -> input.getString(entity).length();
       } else if (ctx.stringEvalFunc().strHashCode() != null) {
-        return (EvalExpression) entity -> murmurhash3_x86_32(input.getString(entity));
+        //noinspection UnstableApiUsage
+        return (EvalExpression) entity -> Hashing.murmur3_32().hashString(input.getString(entity),
+            Charsets.UTF_8).asInt();
       } else if (ctx.stringEvalFunc().strIsEmpty() != null) {
         return (EvalExpression) entity -> asDouble(StringUtils.isEmpty(input.getString(entity)));
       } else if (ctx.stringEvalFunc().strIsNotEmpty() != null) {
@@ -96,23 +100,10 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
           }
         };
       } else {
-        throw new IllegalArgumentException("Unknown string eval function");
+        throw new ExpressionSyntaxException("Unknown string eval function");
       }
     } else if (ctx.propertyAccessor() != null) {
-      switch (ctx.propertyAccessor().getText()) {
-        case "value":
-          return (EvalExpression) entity -> ((ReportPoint) entity).getValue() instanceof Number ?
-              ((Number) ((ReportPoint) entity).getValue()).doubleValue() : 0;
-        case "timestamp":
-          return (EvalExpression) entity -> ((ReportPoint) entity).getTimestamp();
-        case "startMillis":
-          return (EvalExpression) entity -> ((Span) entity).getStartMillis();
-        case "duration":
-          return (EvalExpression) entity -> ((Span) entity).getDuration();
-        default:
-          throw new IllegalArgumentException("Unknown property: " +
-              ctx.propertyAccessor().getText());
-      }
+      return getPropertyAccessor(ctx.propertyAccessor().getText());
     } else if (ctx.number() != null) {
       return (EvalExpression) entity -> getNumber(ctx.number());
     } else if (ctx.evalExpression(0) != null) {
@@ -169,8 +160,10 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
       } else if (ctx.stringFunc().strToUpperCase() != null) {
         return (StringExpression) entity -> input.getString(entity).toUpperCase();
       } else {
-        throw new IllegalArgumentException("Unknown string function");
+        throw new ExpressionSyntaxException("Unknown string function");
       }
+    } else if (ctx.asString() != null) {
+      return visitAsString(ctx.asString());
     } else if (ctx.string() != null) {
       String text = ctx.string().getText();
       return new TemplateExpression(ctx.string().Quoted() != null ? unquote(text) : text);
@@ -183,7 +176,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   @Override
   public Expression visitIff(EvalExpressionParser.IffContext ctx) {
     if (ctx == null) {
-      throw new IllegalArgumentException("Syntax error for if()");
+      throw new ExpressionSyntaxException("Syntax error for if()");
     }
     return iff(eval(ctx.evalExpression(0)), eval(ctx.evalExpression(1)),
         eval(ctx.evalExpression(2)));
@@ -205,7 +198,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   @Override
   public Expression visitTime(EvalExpressionParser.TimeContext ctx) {
     if (ctx.stringExpression(0) == null) {
-      throw new IllegalArgumentException("Cannot parse time argument");
+      throw new ExpressionSyntaxException("Cannot parse time argument");
     }
     StringExpression timeExp = stringExpression(ctx.stringExpression(0));
     TimeZone tz;
@@ -217,7 +210,11 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
     }
     // if we can, parse current timestamp against the time argument to fail fast
     String testString = timeExp.getString(null);
-    Util.parseTextualTimeExact(testString, timeProvider.currentTimeMillis(), tz);
+    try {
+      Util.parseTextualTimeExact(testString, timeProvider.currentTimeMillis(), tz);
+    } catch (IllegalArgumentException e) {
+      throw new ExpressionSyntaxException("Cannot parse '" + testString + "' as time!");
+    }
     return (EvalExpression) entity ->
         Util.parseTextualTimeExact(timeExp.getString(entity),
             timeProvider.currentTimeMillis(), tz);
@@ -232,7 +229,9 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   @Override
   public Expression visitEvalHashCode(EvalExpressionParser.EvalHashCodeContext ctx) {
     StringExpression exp = stringExpression(ctx.stringExpression());
-    return (EvalExpression) entity -> murmurhash3_x86_32(exp.getString(entity));
+    //noinspection UnstableApiUsage
+    return (EvalExpression) entity -> Hashing.murmur3_32().hashString(exp.getString(entity),
+        Charsets.UTF_8).asInt();
   }
 
   @Override
@@ -265,7 +264,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   }
 
   @Override
-  public Expression visitStr(EvalExpressionParser.StrContext ctx) {
+  public Expression visitAsString(EvalExpressionParser.AsStringContext ctx) {
     EvalExpression valueExpression = eval(ctx.evalExpression());
     if (ctx.stringExpression() == null) {
       return (StringExpression) entity -> String.valueOf(valueExpression.getValue(entity));
@@ -279,7 +278,7 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
   @Override
   public Expression visitStrIff(EvalExpressionParser.StrIffContext ctx) {
     if (ctx == null) {
-      throw new IllegalArgumentException("Syntax error for if()");
+      throw new ExpressionSyntaxException("Syntax error for if()");
     }
     EvalExpression condition = eval(ctx.evalExpression());
     StringExpression thenExpression = stringExpression(ctx.stringExpression(0));
@@ -302,13 +301,49 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
     return x -> isTrue(cond.getValue(x)) ? thenExp.getValue(x) : elseExp.getValue(x);
   }
 
-  private static double getNumber(EvalExpressionParser.NumberContext numberContext) {
-    if (numberContext == null) {
-      throw new IllegalArgumentException("Cannot parse number (null)");
+  private EvalExpression getPropertyAccessor(String property) {
+    switch (property) {
+      case "value":
+        return entity -> {
+          if (entity instanceof ReportPoint) {
+            return ((ReportPoint) entity).getValue() instanceof Number ?
+                ((Number) ((ReportPoint) entity).getValue()).doubleValue() : 0;
+          }
+          throw new IllegalArgumentException("$value can only be used on a ReportPoint, got " +
+              entity.getClass().getCanonicalName());
+        };
+      case "timestamp":
+        return entity -> {
+          if (entity instanceof ReportPoint) {
+            return ((ReportPoint) entity).getTimestamp();
+          }
+          throw new IllegalArgumentException("$timestamp can only be used on a ReportPoint, got " +
+              entity.getClass().getCanonicalName());
+        };
+      case "startMillis":
+        return entity -> {
+          if (entity instanceof Span) {
+            return ((Span) entity).getStartMillis();
+          }
+          throw new IllegalArgumentException("$startMillis can only be used on a Span, got " +
+              entity.getClass().getCanonicalName());
+        };
+      case "duration":
+        return entity -> {
+          if (entity instanceof Span) {
+            return ((Span) entity).getDuration();
+          }
+          throw new IllegalArgumentException("$duration can only be used on a Span, got " +
+              entity.getClass().getCanonicalName());
+        };
+      default:
+        throw new ExpressionSyntaxException("Unknown property: " + property);
     }
-    if (numberContext.Number() == null) {
-      throw new IllegalArgumentException("Cannot parse number from: \"" +
-          numberContext.getText() + "\" " + numberContext.getText());
+  }
+
+  private static double getNumber(EvalExpressionParser.NumberContext numberContext) {
+    if (numberContext == null || numberContext.Number() == null) {
+      throw new ExpressionSyntaxException("Cannot parse number");
     }
     String text = numberContext.Number().getText();
     double toReturn = text.startsWith("0x") ? Long.decode(text) : Double.parseDouble(text);
@@ -379,93 +414,9 @@ public class EvalExpressionVisitorImpl extends EvalExpressionBaseVisitor<Express
           toReturn *= 1E-24;
           break;
         default:
-          throw new IllegalArgumentException("Unknown SI Suffix: " + suffix);
+          throw new ExpressionSyntaxException("Unknown SI Suffix: " + suffix);
       }
     }
     return toReturn;
-  }
-
-  private static int murmurhash3_x86_32(CharSequence data) {
-    final int c1 = 0xcc9e2d51;
-    final int c2 = 0x1b873593;
-    int h1 = 0;
-    int pos = 0;
-    int end = data.length();
-    int k1 = 0;
-    int k2 = 0;
-    int shift = 0;
-    int bits = 0;
-    int nBytes = 0;   // length in UTF8 bytes
-
-    while (pos < end) {
-      int code = data.charAt(pos++);
-      if (code < 0x80) {
-        k2 = code;
-        bits = 8;
-      } else if (code < 0x800) {
-        k2 = (0xC0 | (code >> 6))
-            | ((0x80 | (code & 0x3F)) << 8);
-        bits = 16;
-      } else if (code < 0xD800 || code > 0xDFFF || pos >= end) {
-        // we check for pos>=end to encode an unpaired surrogate as 3 bytes.
-        k2 = (0xE0 | (code >> 12))
-            | ((0x80 | ((code >> 6) & 0x3F)) << 8)
-            | ((0x80 | (code & 0x3F)) << 16);
-        bits = 24;
-      } else {
-        // surrogate pair
-        // int utf32 = pos < end ? (int) data.charAt(pos++) : 0;
-        int utf32 = (int) data.charAt(pos++);
-        utf32 = ((code - 0xD7C0) << 10) + (utf32 & 0x3FF);
-        k2 = (0xff & (0xF0 | (utf32 >> 18)))
-            | ((0x80 | ((utf32 >> 12) & 0x3F))) << 8
-            | ((0x80 | ((utf32 >> 6) & 0x3F))) << 16
-            | (0x80 | (utf32 & 0x3F)) << 24;
-        bits = 32;
-      }
-      k1 |= k2 << shift;
-      shift += bits;
-      if (shift >= 32) {
-        // mix after we have a complete word
-        k1 *= c1;
-        k1 = (k1 << 15) | (k1 >>> 17);  // ROTL32(k1,15);
-        k1 *= c2;
-
-        h1 ^= k1;
-        h1 = (h1 << 13) | (h1 >>> 19);  // ROTL32(h1,13);
-        h1 = h1 * 5 + 0xe6546b64;
-
-        shift -= 32;
-        // unfortunately, java won't let you shift 32 bits off, so we need to check for 0
-        if (shift != 0) {
-          k1 = k2 >>> (bits - shift);   // bits used == bits - newshift
-        } else {
-          k1 = 0;
-        }
-        nBytes += 4;
-      }
-
-    } // inner
-
-    // handle tail
-    if (shift > 0) {
-      nBytes += shift >> 3;
-      k1 *= c1;
-      k1 = (k1 << 15) | (k1 >>> 17);  // ROTL32(k1,15);
-      k1 *= c2;
-      h1 ^= k1;
-    }
-
-    // finalization
-    h1 ^= nBytes;
-
-    // fmix(h1);
-    h1 ^= h1 >>> 16;
-    h1 *= 0x85ebca6b;
-    h1 ^= h1 >>> 13;
-    h1 *= 0xc2b2ae35;
-    h1 ^= h1 >>> 16;
-
-    return h1;
   }
 }

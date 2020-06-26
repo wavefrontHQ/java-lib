@@ -52,7 +52,7 @@ public abstract class Predicates {
     if (errorListener.getErrors().length() == 0) {
       return result;
     } else {
-      throw new IllegalArgumentException(errorListener.getErrors().toString());
+      throw new ExpressionSyntaxException(errorListener.getErrors().toString());
     }
   }
 }

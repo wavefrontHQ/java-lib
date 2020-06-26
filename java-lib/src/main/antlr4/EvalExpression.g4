@@ -89,7 +89,7 @@ stringExpression
   : '(' stringExpression ')'
   | stringExpression concat='+' stringExpression
   | stringExpression '.' stringFunc
-  | str
+  | asString
   | strIff
   | string
   ;
@@ -114,8 +114,8 @@ stringEvalFunc
   | strParse
   ;
 
-str
-  : 'str' '(' evalExpression (',' stringExpression) ')'
+asString
+  : 'str' '(' evalExpression (',' stringExpression)? ')'
   ;
 
 strIff

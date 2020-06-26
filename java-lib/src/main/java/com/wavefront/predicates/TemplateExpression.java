@@ -29,8 +29,8 @@ public class TemplateExpression implements StringExpression {
     } else if (entity instanceof Span) {
       return Util.expandPlaceholders(template, (Span) entity);
     } else {
-      throw new IllegalArgumentException("Unknown object type: " +
-          entity.getClass().getCanonicalName());
+      throw new IllegalArgumentException(entity.getClass().getCanonicalName() +
+          " is not supported!");
     }
   }
 }

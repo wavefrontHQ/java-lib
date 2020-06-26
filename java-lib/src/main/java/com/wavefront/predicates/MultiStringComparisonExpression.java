@@ -64,18 +64,15 @@ public class MultiStringComparisonExpression implements EvalExpression {
             getOrDefault(scope, ""));
       }
     } else {
-      throw new IllegalArgumentException("Unknown object type: " +
-          entity.getClass().getCanonicalName());
+      throw new IllegalArgumentException(entity.getClass().getCanonicalName() +
+          " is not supported!");
     }
 
     switch (matchOp) {
       case ALL:
         return asDouble(annotations.stream().allMatch(x -> cmp.apply(x, arg.getString(entity))));
       case ANY:
-        return asDouble(annotations.stream().anyMatch(x -> {
-          return cmp.apply(x, arg.getString(entity));
-        }));
-        //return asDouble(annotations.stream().anyMatch(x -> cmp.apply(x, arg.getString(entity))));
+        return asDouble(annotations.stream().anyMatch(x -> cmp.apply(x, arg.getString(entity))));
       case NONE:
         return asDouble(annotations.stream().noneMatch(x -> cmp.apply(x, arg.getString(entity))));
       default :
