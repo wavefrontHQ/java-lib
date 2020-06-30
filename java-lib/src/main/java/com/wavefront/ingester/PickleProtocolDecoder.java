@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import wavefront.report.ReportPoint;
+import wavefront.report.ReportMetric;
 
 /**
  * Pickle protocol format decoder.
  * https://docs.python.org/2/library/pickle.html
  * @author Mike McLaughlin (mike@wavefront.com)
  */
-public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], ReportPoint> {
+public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], ReportMetric> {
 
   protected static final Logger logger = Logger.getLogger(
       PickleProtocolDecoder.class.getCanonicalName());
@@ -51,7 +51,7 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
   }
 
   @Override
-  public void decode(byte[] msg, List<ReportPoint> out, String customerId) {
+  public void decode(byte[] msg, List<ReportMetric> out, String customerId, IngesterContext ctx) {
     InputStream is = new ByteArrayInputStream(msg);
     Object dataRaw;
     try {
@@ -104,7 +104,7 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
         continue;
       }
 
-      ReportPoint point = new ReportPoint();
+      ReportMetric point = new ReportMetric();
       MetricMangler.MetricComponents components =
           this.metricMangler.extractComponents(o[0].toString());
       point.setMetric(components.metric);
@@ -126,13 +126,8 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
       point.setTable(customerId);
       point.setTimestamp(ts);
       point.setValue(value);
-      point.setAnnotations(Collections.<String, String>emptyMap());
+      point.setAnnotations(Collections.emptyMap());
       out.add(point);
     }
-  }
-
-  @Override
-  public void decode(byte[] msg, List<ReportPoint> out) {
-    decode(msg, out, "dummy");
   }
 }

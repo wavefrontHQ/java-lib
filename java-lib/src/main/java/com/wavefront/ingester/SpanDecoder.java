@@ -35,8 +35,8 @@ public class SpanDecoder implements ReportableEntityDecoder<String, Span> {
   }
 
   @Override
-  public void decode(String msg, List<Span> out, String customerId) {
-    Span span = FORMAT.drive(msg, hostNameSupplier, customerId);
+  public void decode(String msg, List<Span> out, String customerId, IngesterContext ctx) {
+    Span span = FORMAT.drive(msg, hostNameSupplier, customerId, null, ctx);
     if (out != null) {
       out.add(span);
     }

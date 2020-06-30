@@ -59,8 +59,7 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   }
 
   /**
-   * This class can be used to create a parser for a content that the proxy receives - e.g.,
-   * ReportPoint and ReportSourceTag.
+   * This class can be used to create a parser for content that proxy receives.
    */
   public abstract static class IngesterFormatBuilder<T extends SpecificRecordBase> {
     final List<FormatterElement<T>> elements = Lists.newArrayList();
@@ -490,14 +489,38 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
     return text;
   }
 
-  public T drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
-                 String customerId) {
-    return drive(input, defaultHostNameSupplier, customerId, null, null);
+  @Nullable
+  public static String getHost(@Nullable Map<String, String> annotations,
+                               @Nullable List<String> customSourceTags) {
+    String host = null;
+    if (annotations != null) {
+      host = annotations.remove("source");
+      if (host == null) {
+        host = annotations.remove("host");
+      } else if (annotations.containsKey("host")) {
+        // we have to move this elsewhere since during querying,
+        // host= would be interpreted as host and not a point tag
+        annotations.put("_host", annotations.remove("host"));
+      }
+      if (annotations.containsKey("tag")) {
+        annotations.put("_tag", annotations.remove("tag"));
+      }
+      if (host == null && customSourceTags != null) {
+        // iterate over the set of custom tags, breaking when one is found
+        for (String tag : customSourceTags) {
+          host = annotations.get(tag);
+          if (host != null) {
+            break;
+          }
+        }
+      }
+    }
+    return host;
   }
 
   public T drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,
-                 String customerId, IngesterContext ingesterContext) {
-    return drive(input, defaultHostNameSupplier, customerId, null, ingesterContext);
+                 String customerId) {
+    return drive(input, defaultHostNameSupplier, customerId, null, null);
   }
 
   public abstract T drive(String input, @Nullable Supplier<String> defaultHostNameSupplier,

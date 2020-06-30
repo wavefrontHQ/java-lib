@@ -16,6 +16,7 @@ import wavefront.report.ReportPoint;
  *
  * @author Tim Schmidt (tim@wavefront.com).
  */
+@Deprecated
 public class HistogramDecoder implements Decoder<String> {
 
   private static final AbstractIngesterFormatter<ReportPoint> FORMAT =
@@ -53,8 +54,10 @@ public class HistogramDecoder implements Decoder<String> {
   }
 
   @Override
-  public void decodeReportPoints(String msg, List<ReportPoint> out, String customerId, IngesterContext ingesterContext) {
-    ReportPoint point = FORMAT.drive(msg, defaultHostNameSupplier, customerId, ingesterContext);
+  public void decodeReportPoints(String msg, List<ReportPoint> out, String customerId,
+                                 IngesterContext ctx) {
+    ReportPoint point = FORMAT.drive(msg, defaultHostNameSupplier, customerId,
+        ImmutableList.of(), ctx);
     if (point != null) {
       // adjust timestamp according to histogram bin first
       long duration = ((Histogram) point.getValue()).getDuration();

@@ -1,20 +1,23 @@
 package com.wavefront.ingester;
 
-import com.wavefront.common.Clock;
-
-import wavefront.report.ReportPoint;
-
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.wavefront.common.Clock;
+
+import wavefront.report.ReportPoint;
+
 /**
+ * DEPRECATED: use {@link ReportMetricIngesterFormatter} instead.
+ *
  * Builder pattern for creating new ingestion formats. Inspired by the date time formatters in
  * Joda.
  *
  * @author Clement Pang (clement@wavefront.com).
  */
+@Deprecated
 public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<ReportPoint> {
 
   private ReportPointIngesterFormatter(List<FormatterElement<ReportPoint>> elements) {
