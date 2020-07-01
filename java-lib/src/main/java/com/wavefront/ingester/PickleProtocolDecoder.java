@@ -123,7 +123,7 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
         }
       }
       point.setHost(host);
-      point.setTable(customerId);
+      point.setCustomer(customerId);
       point.setTimestamp(ts);
       point.setValue(value);
       point.setAnnotations(Collections.emptyMap());

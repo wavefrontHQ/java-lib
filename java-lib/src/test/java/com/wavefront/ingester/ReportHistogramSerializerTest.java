@@ -32,7 +32,7 @@ public class ReportHistogramSerializerTest {
         .setDuration((int) DateUtils.MILLIS_PER_MINUTE)
         .build();
     histogramPoint = ReportHistogram.newBuilder()
-        .setTable("customer")
+        .setCustomer("customer")
         .setValue(h)
         .setMetric("TestMetric")
         .setHost("TestSource")

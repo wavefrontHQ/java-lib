@@ -36,7 +36,7 @@ public class PredicateEvalExpressionTest {
           "env", "prod", "dc", "us-west-2")).
       build();
   private final ReportMetric metric = ReportMetric.newBuilder().
-      setTable("test").
+      setCustomer("test").
       setValue(1234.5).
       setTimestamp(1592837162000L).
       setMetric("testMetric").
@@ -45,7 +45,7 @@ public class PredicateEvalExpressionTest {
           "env", "prod", "dc", "us-west-2")).
       build();
   private final ReportHistogram histogram = ReportHistogram.newBuilder().
-      setTable("test").
+      setCustomer("test").
       setValue(Histogram.newBuilder().setBins(ImmutableList.of(1.0)).
           setCounts(ImmutableList.of(1)).setDuration(60).setType(HistogramType.TDIGEST).build()).
       setTimestamp(1592837162000L).

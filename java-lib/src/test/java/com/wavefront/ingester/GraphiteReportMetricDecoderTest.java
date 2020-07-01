@@ -25,7 +25,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93.123e3 host=vehicle_2554", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93123.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -33,7 +33,7 @@ public class GraphiteReportMetricDecoderTest {
     out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level -93.123e3 host=vehicle_2554", out);
     point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(-93123.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -41,7 +41,7 @@ public class GraphiteReportMetricDecoderTest {
     out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level -93.123e3", out);
     point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(-93123.0, point.getValue());
     assertEquals("localhost", point.getHost());
@@ -51,7 +51,7 @@ public class GraphiteReportMetricDecoderTest {
     out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93.123e-3 host=vehicle_2554", out);
     point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(0.093123, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -59,7 +59,7 @@ public class GraphiteReportMetricDecoderTest {
     out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level -93.123e-3 host=vehicle_2554", out);
     point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(-0.093123, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -67,7 +67,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> points = Lists.newArrayList();
     decoder.decode("test.devnag.10 100 host=ip1", points, "tsdb");
     point = points.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("test.devnag.10", point.getMetric());
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
@@ -75,7 +75,7 @@ public class GraphiteReportMetricDecoderTest {
     points = Lists.newArrayList();
     decoder.decode("∆test.devnag.10 100 host=ip1", points, "tsdb");
     point = points.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("∆test.devnag.10", point.getMetric());
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
@@ -83,7 +83,7 @@ public class GraphiteReportMetricDecoderTest {
     points.clear();
     decoder.decode("test.devnag.10 100 host=ip1 a=500", points, "tsdb");
     point = points.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("test.devnag.10", point.getMetric());
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
@@ -92,7 +92,7 @@ public class GraphiteReportMetricDecoderTest {
     points.clear();
     decoder.decode("test.devnag.10 100 host=ip1 b=500", points, "tsdb");
     point = points.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("test.devnag.10", point.getMetric());
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
@@ -101,7 +101,7 @@ public class GraphiteReportMetricDecoderTest {
     points.clear();
     decoder.decode("test.devnag.10 100 host=ip1 A=500", points, "tsdb");
     point = points.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("test.devnag.10", point.getMetric());
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
@@ -115,7 +115,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 host=vehicle_2554 version=1_0", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -128,7 +128,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 host=vehicle_2554", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -140,7 +140,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 host=10.0.0.1", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("10.0.0.1", point.getHost());
@@ -152,7 +152,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 host=2001:db8:3333:4444:5555:6666:7777:8888", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("2001:db8:3333:4444:5555:6666:7777:8888", point.getHost());
@@ -164,7 +164,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 1234567890.246 host=vehicle_2554", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals(1234567890246L, point.getTimestamp());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
@@ -177,7 +177,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
   }
@@ -188,7 +188,7 @@ public class GraphiteReportMetricDecoderTest {
     List<ReportMetric> out = new ArrayList<>();
     decoder.decode("tsdb.vehicle.charge.battery_level 93 1234567890.246", out);
     ReportMetric point = out.get(0);
-    assertEquals("tsdb", point.getTable());
+    assertEquals("tsdb", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());

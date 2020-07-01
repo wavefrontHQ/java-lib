@@ -38,7 +38,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getValue().getClass()).isEqualTo(Histogram.class);
 
     assertThat(p.getHost()).isEqualTo("Test");
-    assertThat(p.getTable()).isEqualTo("customer");
+    assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
     assertThat(p.getAnnotations()).containsEntry("key", "value");
 
@@ -183,7 +183,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getTimestamp()).isEqualTo(expectedTimestamp);
 
     assertThat(p.getHost()).isEqualTo("Test");
-    assertThat(p.getTable()).isEqualTo("customer");
+    assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
     assertThat(p.getAnnotations()).containsEntry("_tag", "value");
 
@@ -230,7 +230,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getTimestamp()).isEqualTo(expectedTimestamp);
 
     assertThat(p.getHost()).isEqualTo("Test");
-    assertThat(p.getTable()).isEqualTo("customer");
+    assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
     assertThat(p.getAnnotations()).containsEntry("_tag", "value");
 

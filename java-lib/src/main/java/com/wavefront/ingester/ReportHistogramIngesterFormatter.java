@@ -38,7 +38,7 @@ public class ReportHistogramIngesterFormatter extends AbstractIngesterFormatter<
                            String customerId, @Nullable List<String> customSourceTags,
                            @Nullable IngesterContext ingesterContext) {
     ReportHistogram histogram = new ReportHistogram();
-    histogram.setTable(customerId);
+    histogram.setCustomer(customerId);
     // if the point has a timestamp, this would be overriden
     histogram.setTimestamp(Clock.now());
     final StringParser parser = new StringParser(input);

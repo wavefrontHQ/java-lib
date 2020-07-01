@@ -24,7 +24,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("vehicle.charge.battery_level 93 host=vehicle_2554", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
@@ -36,7 +36,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("vehicle.charge.battery_level 93 1234567890.246 host=vehicle_2554", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals(1234567890246L, point.getTimestamp());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
@@ -49,7 +49,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("vehicle.charge.battery_level 93", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
   }
@@ -60,7 +60,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("vehicle.charge.battery_level 93 1234567890.246", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());
@@ -72,7 +72,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("vehicle.charge.battery_level 93 1234567892468", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567892468L, point.getTimestamp());
@@ -84,7 +84,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("1vehicle.charge.battery_level 93 1234567890.246", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("1vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());
@@ -97,7 +97,7 @@ public class ReportMetricDecoderTest {
     decoder.decode("\"1vehicle.charge.$()+battery_level\" 93 1234567890.246 host=12345 " +
         "blah=\"test hello\" \"hello world\"=test", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("1vehicle.charge.$()+battery_level", point.getMetric());
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
@@ -113,7 +113,7 @@ public class ReportMetricDecoderTest {
     decoder.decode("1vehicle.charge.battery_level 93 1234567890.246 host=12345 blah=\"test hello\" " +
         "\"hello world\"=test", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("1vehicle.charge.battery_level", point.getMetric());
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
@@ -129,7 +129,7 @@ public class ReportMetricDecoderTest {
     decoder.decode("\"1vehicle.charge.'battery_level\" 93 1234567890.246 " +
         "host=12345 blah=\"test'\\\"hello\\\"\" \"hello world\"='\"test\\''", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("1vehicle.charge.'battery_level", point.getMetric());
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
@@ -144,7 +144,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 host=test", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
     assertEquals(1.0, point.getValue());
@@ -156,7 +156,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 source=test", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
     assertEquals(1.0, point.getValue());
@@ -170,7 +170,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 source=test host=bar fqdn=foo", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
     assertEquals("bar", point.getAnnotations().get("_host"));
@@ -187,7 +187,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 hostname=machine fqdn=machine.company.com", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("machine.company.com", point.getHost());
     assertEquals("machine.company.com", point.getAnnotations().get("fqdn"));
@@ -204,7 +204,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 fqdn=machine.company.com", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("machine.company.com", point.getHost());
     assertEquals("machine.company.com", point.getAnnotations().get("fqdn"));
@@ -217,7 +217,7 @@ public class ReportMetricDecoderTest {
     List<ReportMetric> out = Lists.newArrayList();
     decoder.decode("test 1 source=test tag=bar", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
     assertEquals("bar", point.getAnnotations().get("_tag"));
@@ -232,7 +232,7 @@ public class ReportMetricDecoderTest {
         "host=iadprdhyp02.iad.corp.com guest=47173170-2069-4bcc-9bd4-041055b554ec " +
         "instance=ide0_0", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
     assertEquals("47173170-2069-4bcc-9bd4-041055b554ec", point.getAnnotations().get("guest"));
@@ -254,7 +254,7 @@ public class ReportMetricDecoderTest {
     decoder.decode("vm.guest.virtualDisk.mediumSeeks.latest 4.00 1439250320 " +
         "host=iadprdhyp02.iad.corp.com version=\"1.0.0-030051.d0e485f\"", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
     assertEquals("1.0.0-030051.d0e485f", point.getAnnotations().get("version"));
@@ -268,7 +268,7 @@ public class ReportMetricDecoderTest {
     decoder.decode("vm.guest.virtualDisk.mediumSeeks.latest 4.00 1439250320 " +
         "host=iadprdhyp02.iad.corp.com version=\"1.0.0\\\"-030051.d0e485f\"", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
     assertEquals("1.0.0\"-030051.d0e485f", point.getAnnotations().get("version"));

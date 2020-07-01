@@ -272,7 +272,7 @@ public class JsonMetricsParser {
         .setCounts(counts)
         .setBins(bins).build();
     return ReportHistogram.newBuilder().
-        setTable(customer).
+        setCustomer(customer).
         setMetric(metric).
         setHost(host).
         setTimestamp(startMillis).
@@ -297,7 +297,7 @@ public class JsonMetricsParser {
     return ReportMetric.newBuilder()
         .setAnnotations(annotations)
         .setMetric(metric)
-        .setTable(table)
+        .setCustomer(table)
         .setTimestamp(timestamp)
         .setHost(host);
   }

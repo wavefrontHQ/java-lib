@@ -38,7 +38,7 @@ public class ReportMetricIngesterFormatter extends AbstractIngesterFormatter<Rep
                            String customerId, @Nullable List<String> customSourceTags,
                            @Nullable IngesterContext ingesterContext) {
     ReportMetric point = new ReportMetric();
-    point.setTable(customerId);
+    point.setCustomer(customerId);
     // if the point has a timestamp, this would be overriden
     point.setTimestamp(Clock.now());
     final StringParser parser = new StringParser(input);

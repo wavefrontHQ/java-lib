@@ -34,7 +34,7 @@ public class GraphiteReportMetricDecoder extends ReportMetricDecoder {
         if (CUSTOMERID.matcher(customerId).matches()) {
           metricName = Joiner.on(".").join(metricParts.subList(1, metricParts.size()));
         }
-        out.add(ReportMetric.newBuilder(rp).setMetric(metricName).setTable(customerId).build());
+        out.add(ReportMetric.newBuilder(rp).setMetric(metricName).setCustomer(customerId).build());
       }
     }
   }

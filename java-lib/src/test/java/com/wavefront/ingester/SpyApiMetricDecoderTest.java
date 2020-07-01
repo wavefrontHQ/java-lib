@@ -24,7 +24,7 @@ public class SpyApiMetricDecoderTest {
         "\"entity\"=\"span\" \"_wavefront_source\"=\"proxy::wavefront-proxy-canary-1\" " +
         "\"customer\"=\"ts-2018-enablement-39\"", out, "customer");
     ReportMetric point = out.get(0);
-    assertEquals("customer", point.getTable());
+    assertEquals("customer", point.getCustomer());
     assertEquals("sldb.coexisting_tags.bloomfilter.count", point.getMetric());
     assertEquals("surf-2c-app93-i-08de348a716bd3127", point.getHost());
     assertEquals(1.0, point.getValue());

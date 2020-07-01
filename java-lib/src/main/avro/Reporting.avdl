@@ -116,7 +116,7 @@ protocol Reporting {
     long timestamp;
     double value;
     string host = "unknown";
-    string table = "tsdb";
+    string customer = "unknown";
     map<string> annotations = {};
   }
 
@@ -125,7 +125,7 @@ protocol Reporting {
     long timestamp;
     Histogram value;
     string host = "unknown";
-    string table = "tsdb";
+    string customer = "unknown";
     map<string> annotations = {};
   }
 }
