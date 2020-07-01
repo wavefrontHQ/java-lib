@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.wavefront.common.PatternMatch;
 
 import wavefront.report.Annotation;
+import wavefront.report.ReportHistogram;
+import wavefront.report.ReportMetric;
 import wavefront.report.ReportPoint;
 import wavefront.report.Span;
 
@@ -53,6 +55,24 @@ public class MultiStringComparisonExpression implements PredicateEvalExpression 
         annotations = ((Span) entity).getAnnotations().stream().
             filter(a -> a.getKey().equals(scope)).
             map(Annotation::getValue).collect(Collectors.toList());
+      }
+    } else if (entity instanceof ReportMetric) {
+      if (scope.equals("metricName")) {
+        annotations = ImmutableList.of(((ReportMetric) entity).getMetric());
+      } else if (scope.equals("sourceName")){
+        annotations = ImmutableList.of(((ReportMetric) entity).getHost());
+      } else {
+        annotations = ImmutableList.of(((ReportMetric) entity).getAnnotations().
+            getOrDefault(scope, ""));
+      }
+    } else if (entity instanceof ReportHistogram) {
+      if (scope.equals("metricName")) {
+        annotations = ImmutableList.of(((ReportHistogram) entity).getMetric());
+      } else if (scope.equals("sourceName")){
+        annotations = ImmutableList.of(((ReportHistogram) entity).getHost());
+      } else {
+        annotations = ImmutableList.of(((ReportHistogram) entity).getAnnotations().
+            getOrDefault(scope, ""));
       }
     } else if (entity instanceof ReportPoint) {
       if (scope.equals("metricName")) {
