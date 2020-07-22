@@ -6,7 +6,6 @@ import wavefront.report.ReportMetric;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -45,11 +44,7 @@ public class ReportMetricIngesterFormatter extends AbstractIngesterFormatter<Rep
 
     try {
       for (FormatterElement<ReportMetric> element : elements) {
-        if (ingesterContext != null) {
-          element.consume(parser, point, ingesterContext);
-        } else {
-          element.consume(parser, point);
-        }
+        element.consume(parser, point);
       }
     } catch (Exception ex) {
       throw new RuntimeException("Could not parse: " + input, ex);

@@ -1,13 +1,14 @@
 package com.wavefront.ingester;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.function.Function;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 
+import wavefront.report.Annotation;
 import wavefront.report.ReportMetric;
 
 /**
@@ -23,21 +24,21 @@ public class ReportMetricSerializerTest {
     Assert.assertEquals("\"some metric\" 10.0 1469751813 source=\"host\" \"foo\"=\"bar\" " +
             "\"boo\"=\"baz\"",
         serializer.apply(new ReportMetric("some metric",1469751813000L, 10.0, "host", "table",
-            ImmutableMap.of("foo", "bar", "boo", "baz"))));
+            ImmutableList.of(new Annotation("foo", "bar"), new Annotation("boo", "baz")))));
     Assert.assertEquals("\"some metric\" 10.0 1469751813 source=\"host\"",
         serializer.apply(new ReportMetric("some metric",1469751813000L, 10.0, "host", "table",
-            ImmutableMap.of())));
+            ImmutableList.of())));
 
     // Quote in metric name
     Assert.assertEquals("\"some\\\"metric\" 10.0 1469751813 source=\"host\"",
         serializer.apply(new ReportMetric("some\"metric", 1469751813000L, 10.0, "host", "table",
-            new HashMap<String, String>()))
+            new ArrayList<>()))
     );
     // Quote in tags
     Assert.assertEquals("\"some metric\" 10.0 1469751813 source=\"host\" \"foo\\\"\"=\"\\\"bar\" " +
             "\"bo\\\"o\"=\"baz\"",
         serializer.apply(new ReportMetric("some metric", 1469751813000L, 10.0, "host", "table",
-            ImmutableMap.of("foo\"", "\"bar", "bo\"o", "baz")))
+            ImmutableList.of(new Annotation("foo\"", "\"bar"), new Annotation("bo\"o", "baz"))))
     );
   }
 }

@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import wavefront.report.Annotation;
 import wavefront.report.Histogram;
 import wavefront.report.ReportHistogram;
 
@@ -15,6 +16,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.wavefront.ingester.IngesterContext.DEFAULT_CENTROIDS_COUNT_LIMIT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Tim Schmidt (tim@wavefront.com).
@@ -40,7 +42,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getHost()).isEqualTo("Test");
     assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
-    assertThat(p.getAnnotations()).containsEntry("key", "value");
+    assertThat(p.getAnnotations()).contains(new Annotation("key", "value"));
 
     Histogram h = (Histogram) p.getValue();
 
@@ -103,7 +105,7 @@ public class ReportHistogramDecoderTest {
     ReportHistogram p = out.get(0);
 
     assertThat(p.getAnnotations()).isNotNull();
-    assertThat(p.getAnnotations()).containsEntry("_tag", "value");
+    assertThat(p.getAnnotations()).contains(new Annotation("_tag", "value"));
   }
 
   @Test
@@ -185,7 +187,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getHost()).isEqualTo("Test");
     assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
-    assertThat(p.getAnnotations()).containsEntry("_tag", "value");
+    assertThat(p.getAnnotations()).contains(new Annotation("_tag", "value"));
 
     Histogram h = (Histogram) p.getValue();
 
@@ -232,7 +234,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getHost()).isEqualTo("Test");
     assertThat(p.getCustomer()).isEqualTo("customer");
     assertThat(p.getAnnotations()).isNotNull();
-    assertThat(p.getAnnotations()).containsEntry("_tag", "value");
+    assertThat(p.getAnnotations()).contains(new Annotation("_tag", "value"));
 
     Histogram h = (Histogram) p.getValue();
 
@@ -312,10 +314,13 @@ public class ReportHistogramDecoderTest {
     assertNotNull(p.getAnnotations());
   }
 
-  @Test(expected = TooManyCentroidException.class)
+  @Test
   public void testDefaultThrowTooManyCentroidsException() {
     ReportHistogramDecoder decoder = new ReportHistogramDecoder();
     List<ReportHistogram> out = new ArrayList<>();
+
+    IngesterContext ingesterContext = new IngesterContext.Builder().
+        throwIfTooManyHistogramCentroids(DEFAULT_CENTROIDS_COUNT_LIMIT).build();
 
     // Assert we are limit to 100.
     assertEquals(DEFAULT_CENTROIDS_COUNT_LIMIT, 100);
@@ -327,7 +332,7 @@ public class ReportHistogramDecoderTest {
       histogramSB.append(" #").append(i).append(" ").append((double) i);
     }
     histogramSB.append(" TestMetric source=Test key=value");
-    decoder.decode(histogramSB.toString(), out, "customer");
+    decoder.decode(histogramSB.toString(), out, "customer", ingesterContext);
     assertThat(out).isNotEmpty();
     out.clear();
 
@@ -339,7 +344,12 @@ public class ReportHistogramDecoderTest {
     }
     histogramSB.append(" TestMetric source=Test key=value");
 
-    decoder.decode(histogramSB.toString(), out, "customer");
+    try {
+      decoder.decode(histogramSB.toString(), out, "customer", ingesterContext);
+      fail();
+    } catch (TooManyCentroidException e) {
+      // OK
+    }
   }
 
   @Test(expected = TooManyCentroidException.class)
@@ -368,8 +378,8 @@ public class ReportHistogramDecoderTest {
     ReportHistogramDecoder decoder = new ReportHistogramDecoder();
     List<ReportHistogram> out = new ArrayList<>();
 
-    IngesterContext ingesterContext =
-        new IngesterContext.Builder().withTargetHistogramAccuracy(8).build();
+    IngesterContext ingesterContext = new IngesterContext.Builder().withTargetHistogramAccuracy(8).
+        withOptimizeHistograms(true).build();
 
     int centroidsLimit = 50;
     StringBuilder histogramSB = new StringBuilder();
@@ -386,7 +396,7 @@ public class ReportHistogramDecoderTest {
     assertThat(p.getValue()).isNotNull();
     assertThat(p.getValue().getClass()).isEqualTo(Histogram.class);
 
-    Histogram h = (Histogram) p.getValue();
+    Histogram h = p.getValue();
 
     // Verify we have less centroids after compression.
     assertThat(centroidsLimit).isGreaterThan(h.getBins().size());

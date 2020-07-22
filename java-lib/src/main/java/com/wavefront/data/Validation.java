@@ -79,6 +79,16 @@ public class Validation {
     return true;
   }
 
+  @VisibleForTesting
+  static boolean annotationKeysAreValid(List<Annotation> annotations) {
+    for (Annotation annotation : annotations) {
+      if (!charactersAreValid(annotation.getKey())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Deprecated
   public static void validatePoint(ReportPoint point, @Nullable ValidationConfiguration config) {
     if (config == null) {
@@ -199,14 +209,14 @@ public class Validation {
       throw new DataValidationException("WF-400: Point metric has illegal character(s): " +
           metric);
     }
-    final Map<String, String> annotations = point.getAnnotations();
+    final List<Annotation> annotations = point.getAnnotations();
     if (annotations != null) {
       if (annotations.size() > config.getAnnotationsCountLimit()) {
         ERROR_COUNTERS.get("tooManyPointTags").inc();
         throw new DataValidationException("WF-410: Too many point tags (" + annotations.size() +
             ", max " + config.getAnnotationsCountLimit() + "): ");
       }
-      for (Map.Entry<String, String> tag : annotations.entrySet()) {
+      for (Annotation tag : annotations) {
         final String tagK = tag.getKey();
         final String tagV = tag.getValue();
         // Each tag of the form "k=v" must be < 256
@@ -271,14 +281,14 @@ public class Validation {
       throw new DataValidationException("WF-400: Point metric has illegal character(s): " +
           metric);
     }
-    final Map<String, String> annotations = histogram.getAnnotations();
+    final List<Annotation> annotations = histogram.getAnnotations();
     if (annotations != null) {
       if (annotations.size() > config.getAnnotationsCountLimit()) {
         ERROR_COUNTERS.get("tooManyPointTags").inc();
         throw new DataValidationException("WF-410: Too many point tags (" + annotations.size() +
             ", max " + config.getAnnotationsCountLimit() + "): ");
       }
-      for (Map.Entry<String, String> tag : annotations.entrySet()) {
+      for (Annotation tag : annotations) {
         final String tagK = tag.getKey();
         final String tagV = tag.getValue();
         // Each tag of the form "k=v" must be < 256

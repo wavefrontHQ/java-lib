@@ -9,6 +9,7 @@ import java.util.List;
 
 import wavefront.report.ReportMetric;
 
+import static com.wavefront.data.AnnotationUtils.getValue;
 import static java.util.Collections.emptyList;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -102,8 +103,8 @@ public class ReportMetricDecoderTest {
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());
-    assertEquals("test hello", point.getAnnotations().get("blah"));
-    assertEquals("test", point.getAnnotations().get("hello world"));
+    assertEquals("test hello", getValue(point.getAnnotations(), "blah"));
+    assertEquals("test", getValue(point.getAnnotations(), "hello world"));
   }
 
   @Test
@@ -118,8 +119,8 @@ public class ReportMetricDecoderTest {
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());
-    assertEquals("test hello", point.getAnnotations().get("blah"));
-    assertEquals("test", point.getAnnotations().get("hello world"));
+    assertEquals("test hello", getValue(point.getAnnotations(), "blah"));
+    assertEquals("test", getValue(point.getAnnotations(), "hello world"));
   }
 
   @Test
@@ -134,8 +135,8 @@ public class ReportMetricDecoderTest {
     assertEquals("12345", point.getHost());
     assertEquals(93.0, point.getValue());
     assertEquals(1234567890246L, point.getTimestamp());
-    assertEquals("test'\"hello\"", point.getAnnotations().get("blah"));
-    assertEquals("\"test'", point.getAnnotations().get("hello world"));
+    assertEquals("test'\"hello\"", getValue(point.getAnnotations(), "blah"));
+    assertEquals("\"test'", getValue(point.getAnnotations(), "hello world"));
   }
 
   @Test
@@ -173,8 +174,8 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
-    assertEquals("bar", point.getAnnotations().get("_host"));
-    assertEquals("foo", point.getAnnotations().get("fqdn"));
+    assertEquals("bar", getValue(point.getAnnotations(), "_host"));
+    assertEquals("foo", getValue(point.getAnnotations(), "fqdn"));
     assertEquals(1.0, point.getValue());
   }
 
@@ -190,8 +191,8 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("machine.company.com", point.getHost());
-    assertEquals("machine.company.com", point.getAnnotations().get("fqdn"));
-    assertEquals("machine", point.getAnnotations().get("hostname"));
+    assertEquals("machine.company.com", getValue(point.getAnnotations(), "fqdn"));
+    assertEquals("machine", getValue(point.getAnnotations(), "hostname"));
     assertEquals(1.0, point.getValue());
   }
 
@@ -207,7 +208,7 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("machine.company.com", point.getHost());
-    assertEquals("machine.company.com", point.getAnnotations().get("fqdn"));
+    assertEquals("machine.company.com", getValue(point.getAnnotations(), "fqdn"));
     assertEquals(1.0, point.getValue());
   }
 
@@ -220,7 +221,7 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("test", point.getMetric());
     assertEquals("test", point.getHost());
-    assertEquals("bar", point.getAnnotations().get("_tag"));
+    assertEquals("bar", getValue(point.getAnnotations(), "_tag"));
     assertEquals(1.0, point.getValue());
   }
 
@@ -235,8 +236,8 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
-    assertEquals("47173170-2069-4bcc-9bd4-041055b554ec", point.getAnnotations().get("guest"));
-    assertEquals("ide0_0", point.getAnnotations().get("instance"));
+    assertEquals("47173170-2069-4bcc-9bd4-041055b554ec", getValue(point.getAnnotations(), "guest"));
+    assertEquals("ide0_0", getValue(point.getAnnotations(), "instance"));
     assertEquals(4.0, point.getValue());
 
     out = new ArrayList<>();
@@ -257,7 +258,7 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
-    assertEquals("1.0.0-030051.d0e485f", point.getAnnotations().get("version"));
+    assertEquals("1.0.0-030051.d0e485f", getValue(point.getAnnotations(), "version"));
     assertEquals(4.0, point.getValue());
   }
 
@@ -271,7 +272,7 @@ public class ReportMetricDecoderTest {
     assertEquals("customer", point.getCustomer());
     assertEquals("vm.guest.virtualDisk.mediumSeeks.latest", point.getMetric());
     assertEquals("iadprdhyp02.iad.corp.com", point.getHost());
-    assertEquals("1.0.0\"-030051.d0e485f", point.getAnnotations().get("version"));
+    assertEquals("1.0.0\"-030051.d0e485f", getValue(point.getAnnotations(), "version"));
     assertEquals(4.0, point.getValue());
   }
 

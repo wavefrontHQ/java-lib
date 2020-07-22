@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import wavefront.report.ReportMetric;
-import wavefront.report.ReportMetric;
 
 /**
  * Decoder for WFTop data format (Spy API stream):
@@ -18,10 +17,10 @@ public class SpyApiMetricDecoder implements ReportableEntityDecoder<String, Repo
   private static final AbstractIngesterFormatter<ReportMetric> FORMAT =
       ReportMetricIngesterFormatter.newBuilder().
           text(ReportMetric::setMetric).
-          annotationMap(ReportMetric::setAnnotations, 1).
+          annotationList(ReportMetric::setAnnotations, 1).
           timestamp(ReportMetric::setTimestamp).
           value(ReportMetric::setValue).
-          annotationMap(ReportMetric::getAnnotations, ReportMetric::setAnnotations).
+          annotationList(ReportMetric::getAnnotations, ReportMetric::setAnnotations).
           build();
   private final Supplier<String> hostNameSupplier = () -> "default";
 

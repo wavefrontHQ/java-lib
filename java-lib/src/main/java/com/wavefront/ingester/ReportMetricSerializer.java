@@ -6,8 +6,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import wavefront.report.ReportMetric;
 
+import static com.wavefront.common.SerializerUtils.appendAnnotations;
 import static com.wavefront.common.SerializerUtils.appendQuoted;
-import static com.wavefront.common.SerializerUtils.appendTagMap;
 
 /**
  * Convert a {@link ReportMetric} to its string representation in a canonical format
@@ -30,7 +30,7 @@ public class ReportMetricSerializer implements Function<ReportMetric, String> {
         append(" ").append(point.getTimestamp() / 1000).
         append(" ").append("source=");
     appendQuoted(sb, point.getHost());
-    appendTagMap(sb, point.getAnnotations());
+    appendAnnotations(sb, point.getAnnotations());
     return sb.toString();
   }
 }

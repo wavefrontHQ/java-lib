@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 
 import wavefront.report.ReportMetric;
 
+import static com.wavefront.data.AnnotationUtils.getValue;
 import static java.util.Collections.emptyList;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -88,7 +89,7 @@ public class GraphiteReportMetricDecoderTest {
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
     assertEquals(1, point.getAnnotations().size());
-    assertEquals("500", point.getAnnotations().get("a"));
+    assertEquals("500", getValue(point.getAnnotations(), "a"));
     points.clear();
     decoder.decode("test.devnag.10 100 host=ip1 b=500", points, "tsdb");
     point = points.get(0);
@@ -97,7 +98,7 @@ public class GraphiteReportMetricDecoderTest {
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
     assertEquals(1, point.getAnnotations().size());
-    assertEquals("500", point.getAnnotations().get("b"));
+    assertEquals("500", getValue(point.getAnnotations(), "b"));
     points.clear();
     decoder.decode("test.devnag.10 100 host=ip1 A=500", points, "tsdb");
     point = points.get(0);
@@ -106,7 +107,7 @@ public class GraphiteReportMetricDecoderTest {
     assertEquals(100.0, point.getValue());
     assertEquals("ip1", point.getHost());
     assertEquals(1, point.getAnnotations().size());
-    assertEquals("500", point.getAnnotations().get("A"));
+    assertEquals("500", getValue(point.getAnnotations(), "A"));
   }
 
   @Test
@@ -119,7 +120,7 @@ public class GraphiteReportMetricDecoderTest {
     assertEquals("vehicle.charge.battery_level", point.getMetric());
     assertEquals(93.0, point.getValue());
     assertEquals("vehicle_2554", point.getHost());
-    assertEquals("1_0", point.getAnnotations().get("version"));
+    assertEquals("1_0", getValue(point.getAnnotations(), "version"));
   }
 
   @Test

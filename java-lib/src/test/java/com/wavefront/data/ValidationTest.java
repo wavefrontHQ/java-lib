@@ -13,12 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import wavefront.report.Annotation;
-import wavefront.report.Histogram;
 import wavefront.report.ReportHistogram;
 import wavefront.report.ReportMetric;
 import wavefront.report.Span;
@@ -128,17 +125,14 @@ public class ValidationTest {
 
   @Test
   public void testPointAnnotationKeyValidation() {
-    Map<String, String> goodMap = new HashMap<String, String>();
-    goodMap.put("key", "value");
-
-    Map<String, String> badMap = new HashMap<String, String>();
-    badMap.put("k:ey", "value");
+    List<Annotation> good = ImmutableList.of(new Annotation("key", "value"));
+    List<Annotation> bad = ImmutableList.of(new Annotation("k:ey", "value"));
 
     ReportMetric rp = new ReportMetric("some metric", System.currentTimeMillis(), 10.0, "host",
-        "table", goodMap);
+        "table", good);
     Assert.assertTrue(Validation.annotationKeysAreValid(rp.getAnnotations()));
 
-    rp.setAnnotations(badMap);
+    rp.setAnnotations(bad);
     Assert.assertFalse(Validation.annotationKeysAreValid(rp.getAnnotations()));
   }
 
@@ -170,8 +164,8 @@ public class ValidationTest {
 
     // point tag key has invalid characters: WF-401
     point = getValidPoint();
-    point.getAnnotations().remove("tagk4");
-    point.getAnnotations().put("tag!4", "value");
+    point.getAnnotations().removeIf(k -> k.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation("tag!4", "value"));
     try {
       Validation.validateMetric(point, config);
       fail();
@@ -280,7 +274,7 @@ public class ValidationTest {
 
     // too many point tags: WF-410
     point = getValidPoint();
-    point.getAnnotations().put("newtag", "newtagV");
+    point.getAnnotations().add(new Annotation("newtag", "newtagV"));
     try {
       Validation.validateMetric(point, config);
       fail();
@@ -290,13 +284,13 @@ public class ValidationTest {
 
     // point tag (key+value) too long: WF-411
     point = getValidPoint();
-    point.getAnnotations().remove("tagk4");
-    point.getAnnotations().put(Strings.repeat("k", 100), Strings.repeat("v", 154));
+    point.getAnnotations().removeIf(k -> k.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation(Strings.repeat("k", 100), Strings.repeat("v", 154)));
     ValidationConfiguration tagConfig = new ValidationConfiguration().
         setAnnotationsKeyLengthLimit(255).
         setAnnotationsValueLengthLimit(255);
     Validation.validateMetric(point, tagConfig);
-    point.getAnnotations().put(Strings.repeat("k", 100), Strings.repeat("v", 155));
+    point.getAnnotations().add(new Annotation(Strings.repeat("k", 100), Strings.repeat("v", 155)));
     try {
       Validation.validateMetric(point, tagConfig);
       fail();
@@ -306,8 +300,8 @@ public class ValidationTest {
 
     // point tag key too long: WF-412
     point = getValidPoint();
-    point.getAnnotations().remove("tagk4");
-    point.getAnnotations().put("tagk44", "v");
+    point.getAnnotations().removeIf(k -> k.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation("tagk44", "v"));
     try {
       Validation.validateMetric(point, config);
       fail();
@@ -317,10 +311,12 @@ public class ValidationTest {
 
     // point tag value too long: WF-413
     point = getValidPoint();
-    point.getAnnotations().put("tagk4", "value67890");
+    point.getAnnotations().removeIf(x -> x.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation("tagk4", "value67890"));
     Validation.validateMetric(point, config);
     point = getValidPoint();
-    point.getAnnotations().put("tagk4", "value678901");
+    point.getAnnotations().removeIf(x -> x.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation("tagk4", "value678901"));
     try {
       Validation.validateMetric(point, config);
       fail();
@@ -330,7 +326,8 @@ public class ValidationTest {
 
     // point tag value empty: WF-414
     point = getValidPoint();
-    point.getAnnotations().put("tagk4", "");
+    point.getAnnotations().removeIf(x -> x.getKey().equals("tagk4"));
+    point.getAnnotations().add(new Annotation("tagk4", ""));
     try {
       Validation.validateMetric(point, config);
       fail();

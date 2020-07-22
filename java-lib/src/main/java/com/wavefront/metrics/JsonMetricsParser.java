@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.avro.specific.SpecificRecordBase;
-
 import wavefront.report.Histogram;
 import wavefront.report.HistogramType;
 import wavefront.report.ReportHistogram;
@@ -22,6 +20,7 @@ import wavefront.report.ReportMetric;
 import wavefront.report.ReportPoint;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.wavefront.data.AnnotationUtils.toAnnotationList;
 
 /**
  * Helper methods to turn json nodes into actual Wavefront report points
@@ -276,7 +275,7 @@ public class JsonMetricsParser {
         setMetric(metric).
         setHost(host).
         setTimestamp(startMillis).
-        setAnnotations(annotations).
+        setAnnotations(toAnnotationList(annotations)).
         setValue(histogram).
         build();
   }
@@ -295,7 +294,7 @@ public class JsonMetricsParser {
   private static ReportMetric.Builder makeMetric(String table, String metric, String host,
                                                  long timestamp, Map<String, String> annotations) {
     return ReportMetric.newBuilder()
-        .setAnnotations(annotations)
+        .setAnnotations(toAnnotationList(annotations))
         .setMetric(metric)
         .setCustomer(table)
         .setTimestamp(timestamp)

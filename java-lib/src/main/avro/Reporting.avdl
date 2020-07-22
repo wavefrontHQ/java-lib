@@ -117,7 +117,7 @@ protocol Reporting {
     double value;
     string host = "unknown";
     string customer = "unknown";
-    map<string> annotations = {};
+    array<Annotation> annotations = [];
   }
 
   record ReportHistogram {
@@ -126,6 +126,6 @@ protocol Reporting {
     Histogram value;
     string host = "unknown";
     string customer = "unknown";
-    map<string> annotations = {};
+    array<Annotation> annotations = [];
   }
 }

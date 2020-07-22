@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import wavefront.report.ReportMetric;
@@ -67,7 +66,7 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
     // [(path, (timestamp, value)), ...]
     List<Object[]> data = (List<Object[]>) dataRaw;
     for (Object[] o : data) {
-      Object[] details = (Object[])o[1];
+      Object[] details = (Object[]) o[1];
       if (details == null || details.length != 2) {
         logger.warning(String.format("[%d] Unexpected pickle protocol input", port));
         continue;
@@ -77,11 +76,11 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
         logger.warning(String.format("[%d] Unexpected pickle protocol input (timestamp is null)", port));
         continue;
       } else if (details[0] instanceof Double) {
-        ts = ((Double)details[0]).longValue() * 1000;
+        ts = ((Double) details[0]).longValue() * 1000;
       } else if (details[0] instanceof Long) {
-        ts = ((Long)details[0]).longValue() * 1000;
+        ts = ((Long) details[0]).longValue() * 1000;
       } else if (details[0] instanceof Integer) {
-        ts = ((Integer)details[0]).longValue() * 1000;
+        ts = ((Integer) details[0]).longValue() * 1000;
       } else {
         logger.warning(String.format("[%d] Unexpected pickle protocol input (details[0]: %s)",
             port, details[0].getClass().getName()));
@@ -91,14 +90,14 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
       if (details[1] == null) {
         continue;
       }
-      
+
       double value;
       if (details[1] instanceof Double) {
-        value = ((Double)details[1]).doubleValue();
+        value = ((Double) details[1]).doubleValue();
       } else if (details[1] instanceof Long) {
-        value = ((Long)details[1]).longValue();
+        value = ((Long) details[1]).longValue();
       } else if (details[1] instanceof Integer) {
-        value = ((Integer)details[1]).intValue();
+        value = ((Integer) details[1]).intValue();
       } else {
         logger.warning(String.format("[%d] Unexpected pickle protocol input (value is null)", port));
         continue;
@@ -109,24 +108,17 @@ public class PickleProtocolDecoder implements ReportableEntityDecoder<byte[], Re
           this.metricMangler.extractComponents(o[0].toString());
       point.setMetric(components.metric);
       String host = components.source;
-      final Map<String, String> annotations = point.getAnnotations();
-      if (host == null && annotations != null) {
-        // iterate over the set of custom tags, breaking when one is found
-        for (final String tag : customSourceTags) {
-          host = annotations.remove(tag);
-          if (host != null) {
-            break;
-          }
-        }
-        if (host == null) {
-          host = this.defaultHostName;
-        }
+      if (host == null) {
+        host = AbstractIngesterFormatter.getHost(point.getAnnotations(), customSourceTags);
+      }
+      if (host == null) {
+        host = this.defaultHostName;
       }
       point.setHost(host);
       point.setCustomer(customerId);
       point.setTimestamp(ts);
       point.setValue(value);
-      point.setAnnotations(Collections.emptyMap());
+      point.setAnnotations(Collections.emptyList());
       out.add(point);
     }
   }

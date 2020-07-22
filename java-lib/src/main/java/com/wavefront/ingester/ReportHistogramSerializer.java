@@ -10,8 +10,8 @@ import com.google.common.annotations.VisibleForTesting;
 import wavefront.report.Histogram;
 import wavefront.report.ReportHistogram;
 
+import static com.wavefront.common.SerializerUtils.appendAnnotations;
 import static com.wavefront.common.SerializerUtils.appendQuoted;
-import static com.wavefront.common.SerializerUtils.appendTagMap;
 
 /**
  * Convert a {@link ReportHistogram} to its string representation in a canonical format
@@ -80,7 +80,7 @@ public class ReportHistogramSerializer implements Function<ReportHistogram, Stri
     // Source
     sb.append(" ").append("source=");
     appendQuoted(sb, point.getHost());
-    appendTagMap(sb, point.getAnnotations());
+    appendAnnotations(sb, point.getAnnotations());
     return sb.toString();
   }
 }

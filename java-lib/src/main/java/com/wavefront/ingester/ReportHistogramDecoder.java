@@ -1,13 +1,20 @@
 package com.wavefront.ingester;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableList;
+import com.tdunning.math.stats.AVLTreeDigest;
+import com.tdunning.math.stats.Centroid;
+import com.tdunning.math.stats.TDigest;
+
 import org.apache.commons.lang.time.DateUtils;
 import wavefront.report.Histogram;
 import wavefront.report.HistogramType;
 import wavefront.report.ReportHistogram;
+
+import static com.wavefront.ingester.IngesterContext.DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO;
 
 /**
  * Decoder that takes in histograms of the type:
@@ -25,7 +32,7 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
           optionalTimestamp(ReportHistogram::setTimestamp).
           centroids().
           text(ReportHistogram::setMetric).
-          annotationMap(ReportHistogram::setAnnotations).
+          annotationList(ReportHistogram::setAnnotations).
           build();
 
   private final Supplier<String> defaultHostNameSupplier;
@@ -44,13 +51,23 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
 
   @Override
   public void decode(String msg, List<ReportHistogram> out, String customerId,
-                     IngesterContext ctx) {
-    ReportHistogram point = FORMAT.drive(msg, defaultHostNameSupplier, customerId, null, ctx);
-    if (point != null) {
+                     @Nullable IngesterContext ctx) {
+    ReportHistogram histogram = FORMAT.drive(msg, defaultHostNameSupplier, customerId, null, ctx);
+    if (histogram != null) {
+      Histogram value = histogram.getValue();
+      if (ctx != null) {
+        if (value.getCounts().size() > ctx.getHistogramCentroidsLimit()) {
+          throw new TooManyCentroidException();
+        }
+        if (ctx.isOptimizeHistograms()) {
+          optimizeForStorage(value.getBins(), value.getCounts(), value.getCounts().size(),
+              ctx.getTargetHistogramAccuracy());
+        }
+      }
       // adjust timestamp according to histogram bin first
-      long duration = point.getValue().getDuration();
-      point.setTimestamp((point.getTimestamp() / duration) * duration);
-      out.add(ReportHistogram.newBuilder(point).build());
+      long duration = value.getDuration();
+      histogram.setTimestamp((histogram.getTimestamp() / duration) * duration);
+      out.add(ReportHistogram.newBuilder(histogram).build());
     }
   }
 
@@ -78,5 +95,60 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
     histogram.setDuration(durationMillis);
     histogram.setType(HistogramType.TDIGEST);
     target.setValue(histogram);
+  }
+
+  /**
+   * Optimize the means/counts pair if necessary.
+   *
+   * @param means  centroids means
+   * @param counts centroid counts
+   */
+  private static void optimizeForStorage(@Nullable List<Double> means,
+                                         @Nullable List<Integer> counts,
+                                         int size, int storageAccuracy) {
+    if (means == null || means.isEmpty() || counts == null || counts.isEmpty()) {
+      return;
+    }
+    if (size > DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO * storageAccuracy) { // Too many centroids
+      rewrite(means, counts, size, storageAccuracy);
+    }
+    if (counts.stream().anyMatch(i -> i < 1)) { // Bogus counts
+      rewrite(means, counts, size, storageAccuracy);
+    } else {
+      int strictlyIncreasingLength = 1;
+      for (; strictlyIncreasingLength < means.size(); ++strictlyIncreasingLength) {
+        if (means.get(strictlyIncreasingLength - 1) >= means.get(strictlyIncreasingLength)) {
+          break;
+        }
+      }
+      if (strictlyIncreasingLength != means.size()) { // not ordered
+        rewrite(means, counts, size, storageAccuracy);
+      }
+    }
+  }
+
+  /**
+   * Reorganizes a mean/count array pair (such that centroids) are in strictly ascending order.
+   *
+   * @param means  centroids means
+   * @param counts centroid counts
+   * @param size  limit for means and counters to rewrite, usually min(means.size(), counts.size())
+   */
+  private static void rewrite(List<Double> means, List<Integer> counts,
+                              int size, int storageAccuracy) {
+    TDigest temp = new AVLTreeDigest(storageAccuracy);
+    for (int i = 0; i < size; ++i) {
+      int count = counts.get(i);
+      if (count > 0) {
+        temp.add(means.get(i), count);
+      }
+    }
+    temp.compress();
+    means.clear();
+    counts.clear();
+    for (Centroid c : temp.centroids()) {
+      means.add(c.mean());
+      counts.add(c.count());
+    }
   }
 }

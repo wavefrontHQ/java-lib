@@ -7,8 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
+import wavefront.report.Annotation;
 import wavefront.report.Histogram;
 import wavefront.report.HistogramType;
 import wavefront.report.ReportHistogram;
@@ -37,7 +37,8 @@ public class ReportHistogramSerializerTest {
         .setMetric("TestMetric")
         .setHost("TestSource")
         .setTimestamp(1469751813000L)
-        .setAnnotations(ImmutableMap.of("keyA", "valueA", "keyB", "valueB"))
+        .setAnnotations(ImmutableList.of(new Annotation("keyA", "valueA"),
+            new Annotation("keyB", "valueB")))
         .build();
   }
 
@@ -70,7 +71,7 @@ public class ReportHistogramSerializerTest {
 
   @Test
   public void testHistogramReportHistogramToString_quotesInTags() {
-    histogramPoint.setAnnotations(ImmutableMap.of("K\"ey", "V\"alue"));
+    histogramPoint.setAnnotations(ImmutableList.of(new Annotation("K\"ey", "V\"alue")));
     String subject = serializer.apply(histogramPoint);
     assertThat(subject).isEqualTo("!M 1469751813 #2 10.0 #4 20.0 \"TestMetric\" source=\"TestSource\" \"K\\\"ey\"=\"V\\\"alue\"");
   }

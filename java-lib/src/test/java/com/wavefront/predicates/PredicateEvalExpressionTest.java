@@ -41,8 +41,9 @@ public class PredicateEvalExpressionTest {
       setTimestamp(1592837162000L).
       setMetric("testMetric").
       setHost("testHost").
-      setAnnotations(ImmutableMap.of("tagk1", "tagv1", "tagk2", "tagv2",
-          "env", "prod", "dc", "us-west-2")).
+      setAnnotations(ImmutableList.of(
+          new Annotation("tagk1", "tagv1"), new Annotation("tagk2", "tagv2"),
+          new Annotation("env", "prod"), new Annotation("dc", "us-west-2"))).
       build();
   private final ReportHistogram histogram = ReportHistogram.newBuilder().
       setCustomer("test").
@@ -51,8 +52,9 @@ public class PredicateEvalExpressionTest {
       setTimestamp(1592837162000L).
       setMetric("testMetric").
       setHost("testHost").
-      setAnnotations(ImmutableMap.of("tagk1", "tagv1", "tagk2", "tagv2",
-          "env", "prod", "dc", "us-west-2")).
+      setAnnotations(ImmutableList.of(
+          new Annotation("tagk1", "tagv1"), new Annotation("tagk2", "tagv2"),
+          new Annotation("env", "prod"), new Annotation("dc", "us-west-2"))).
       build();
   private final Span span = Span.newBuilder().
       setCustomer("test").

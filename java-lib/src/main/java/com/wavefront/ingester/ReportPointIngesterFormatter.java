@@ -47,11 +47,7 @@ public class ReportPointIngesterFormatter extends AbstractIngesterFormatter<Repo
 
     try {
       for (FormatterElement<ReportPoint> element : elements) {
-        if (ingesterContext != null) {
-          element.consume(parser, point, ingesterContext);
-        } else {
-          element.consume(parser, point);
-        }
+        element.consume(parser, point);
       }
     } catch (TooManyCentroidException ex) {
       throw new TooManyCentroidException("Could not parse: " + input, ex);

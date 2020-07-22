@@ -5,6 +5,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.wavefront.data.AnnotationUtils;
+
 import wavefront.report.ReportMetric;
 
 import static junit.framework.Assert.assertEquals;
@@ -105,6 +107,6 @@ public class OpenTSDBDecoderTest {
     assertEquals(93123.0, point.getValue());
     assertEquals(12345678L, point.getTimestamp());
     assertEquals("/vehicle_2554-test/GOOD", point.getHost());
-    assertEquals("/vehicle_2554-test/BAD", point.getAnnotations().get("some_tag"));
+    assertEquals("/vehicle_2554-test/BAD", AnnotationUtils.getValue(point.getAnnotations(), "some_tag"));
   }
 }

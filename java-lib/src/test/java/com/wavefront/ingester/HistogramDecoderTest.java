@@ -15,6 +15,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.wavefront.ingester.IngesterContext.DEFAULT_CENTROIDS_COUNT_LIMIT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Tim Schmidt (tim@wavefront.com).
@@ -312,10 +313,13 @@ public class HistogramDecoderTest {
     assertNotNull(p.getAnnotations());
   }
 
-  @Test(expected = TooManyCentroidException.class)
+  @Test
   public void testDefaultThrowTooManyCentroidsException() {
     HistogramDecoder decoder = new HistogramDecoder();
     List<ReportPoint> out = new ArrayList<>();
+
+    IngesterContext ingesterContext = new IngesterContext.Builder().
+        throwIfTooManyHistogramCentroids(DEFAULT_CENTROIDS_COUNT_LIMIT).build();
 
     // Assert we are limit to 100.
     assertEquals(DEFAULT_CENTROIDS_COUNT_LIMIT, 100);
@@ -327,7 +331,7 @@ public class HistogramDecoderTest {
       histogramSB.append(" #").append(i).append(" ").append((double) i);
     }
     histogramSB.append(" TestMetric source=Test key=value");
-    decoder.decodeReportPoints(histogramSB.toString(), out, "customer");
+    decoder.decodeReportPoints(histogramSB.toString(), out, "customer", ingesterContext);
     assertThat(out).isNotEmpty();
     out.clear();
 
@@ -339,7 +343,12 @@ public class HistogramDecoderTest {
     }
     histogramSB.append(" TestMetric source=Test key=value");
 
-    decoder.decodeReportPoints(histogramSB.toString(), out, "customer");
+    try {
+      decoder.decodeReportPoints(histogramSB.toString(), out, "customer", ingesterContext);
+      fail();
+    } catch (TooManyCentroidException e) {
+      // OK
+    }
   }
 
   @Test(expected = TooManyCentroidException.class)
@@ -368,8 +377,8 @@ public class HistogramDecoderTest {
     HistogramDecoder decoder = new HistogramDecoder();
     List<ReportPoint> out = new ArrayList<>();
 
-    IngesterContext ingesterContext =
-        new IngesterContext.Builder().withTargetHistogramAccuracy(8).build();
+    IngesterContext ingesterContext = new IngesterContext.Builder().withTargetHistogramAccuracy(8).
+        withOptimizeHistograms(true).build();
 
     int centroidsLimit = 50;
     StringBuilder histogramSB = new StringBuilder();

@@ -7,7 +7,6 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import wavefront.report.ReportMetric;
-import wavefront.report.ReportMetric;
 
 /**
  * OpenTSDB decoder that takes in a point of the type:
@@ -24,7 +23,7 @@ public class OpenTSDBDecoder implements ReportableEntityDecoder<String, ReportMe
           text(ReportMetric::setMetric).
           timestamp(ReportMetric::setTimestamp).
           value(ReportMetric::setValue).
-          annotationMap(ReportMetric::setAnnotations).
+          annotationList(ReportMetric::setAnnotations).
           build();
   private final String hostName;
   private final List<String> customSourceTags;

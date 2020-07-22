@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 
 import wavefront.report.ReportMetric;
 
+import static com.wavefront.data.AnnotationUtils.getValue;
 import static junit.framework.Assert.assertEquals;
 
 /**
@@ -29,9 +30,10 @@ public class SpyApiMetricDecoderTest {
     assertEquals("surf-2c-app93-i-08de348a716bd3127", point.getHost());
     assertEquals(1.0, point.getValue());
     assertEquals(4, point.getAnnotations().size());
-    assertEquals("engine", point.getAnnotations().get("service"));
-    assertEquals("span", point.getAnnotations().get("entity"));
-    assertEquals("proxy::wavefront-proxy-canary-1", point.getAnnotations().get("_wavefront_source"));
-    assertEquals("ts-2018-enablement-39", point.getAnnotations().get("customer"));
+    assertEquals("engine", getValue(point.getAnnotations(), "service"));
+    assertEquals("span", getValue(point.getAnnotations(), "entity"));
+    assertEquals("proxy::wavefront-proxy-canary-1",
+        getValue(point.getAnnotations(), "_wavefront_source"));
+    assertEquals("ts-2018-enablement-39", getValue(point.getAnnotations(), "customer"));
   }
 }

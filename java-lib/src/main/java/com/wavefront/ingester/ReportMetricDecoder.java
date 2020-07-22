@@ -19,7 +19,7 @@ public class ReportMetricDecoder implements ReportableEntityDecoder<String, Repo
           text(ReportMetric::setMetric).
           value(ReportMetric::setValue).
           optionalTimestamp(ReportMetric::setTimestamp).
-          annotationMap(ReportMetric::setAnnotations).
+          annotationList(ReportMetric::setAnnotations).
           build();
   private final Supplier<String> hostNameSupplier;
   private List<String> customSourceTags;

@@ -112,7 +112,9 @@ public abstract class Util {
               substitution = reportMetric.getHost();
               break;
             default:
-              substitution = reportMetric.getAnnotations().get(placeholders.group(1));
+              substitution = reportMetric.getAnnotations().stream().
+                  filter(a -> a.getKey().equals(placeholders.group(1))).
+                  map(Annotation::getValue).findFirst().orElse(null);
           }
           placeholders.appendReplacement(result, firstNonNull(substitution, ""));
         }
@@ -149,7 +151,9 @@ public abstract class Util {
               substitution = reportHistogram.getHost();
               break;
             default:
-              substitution = reportHistogram.getAnnotations().get(placeholders.group(1));
+              substitution = reportHistogram.getAnnotations().stream().
+                  filter(a -> a.getKey().equals(placeholders.group(1))).
+                  map(Annotation::getValue).findFirst().orElse(null);
           }
           placeholders.appendReplacement(result, firstNonNull(substitution, ""));
         }
