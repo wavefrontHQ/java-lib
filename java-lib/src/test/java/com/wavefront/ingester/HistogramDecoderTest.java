@@ -408,7 +408,7 @@ public class HistogramDecoderTest {
 
     IngesterContext ingesterContext =
             new IngesterContext.Builder().withTargetHistogramAccuracy(32).
-                    throwIfTooManyHistogramCentroids(100).build();
+                    throwIfTooManyHistogramCentroids(100).withOptimizeHistograms(true).build();
 
     String s = "!M 1471988653 #16456 1591 #747 2 #8436 81 #12418 104 #13033 1496 #7012 112583 #811 298964 #4922 46 " +
             "#10531 1056 #1248 1875 #1340 297186 #18784 424 #12377 3328 #4050 276614 #6082 27 #16895 1273 #6054 " +
