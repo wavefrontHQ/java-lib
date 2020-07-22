@@ -109,11 +109,13 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
     if (means == null || means.isEmpty() || counts == null || counts.isEmpty()) {
       return;
     }
+
     if (size > DEFAULT_HISTOGRAM_COMPRESS_LIMIT_RATIO * storageAccuracy) { // Too many centroids
-      rewrite(means, counts, size, storageAccuracy);
+      rewrite(means, counts, storageAccuracy);
     }
+
     if (counts.stream().anyMatch(i -> i < 1)) { // Bogus counts
-      rewrite(means, counts, size, storageAccuracy);
+      rewrite(means, counts, storageAccuracy);
     } else {
       int strictlyIncreasingLength = 1;
       for (; strictlyIncreasingLength < means.size(); ++strictlyIncreasingLength) {
@@ -122,7 +124,7 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
         }
       }
       if (strictlyIncreasingLength != means.size()) { // not ordered
-        rewrite(means, counts, size, storageAccuracy);
+        rewrite(means, counts, storageAccuracy);
       }
     }
   }
@@ -132,11 +134,10 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
    *
    * @param means  centroids means
    * @param counts centroid counts
-   * @param size  limit for means and counters to rewrite, usually min(means.size(), counts.size())
    */
-  private static void rewrite(List<Double> means, List<Integer> counts,
-                              int size, int storageAccuracy) {
+  private static void rewrite(List<Double> means, List<Integer> counts, int storageAccuracy) {
     TDigest temp = new AVLTreeDigest(storageAccuracy);
+    int size = Math.min(means.size(), counts.size());
     for (int i = 0; i < size; ++i) {
       int count = counts.get(i);
       if (count > 0) {
@@ -144,6 +145,7 @@ public class ReportHistogramDecoder implements ReportableEntityDecoder<String, R
       }
     }
     temp.compress();
+
     means.clear();
     counts.clear();
     for (Centroid c : temp.centroids()) {
