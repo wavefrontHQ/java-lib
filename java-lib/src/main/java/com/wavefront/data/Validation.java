@@ -57,14 +57,13 @@ public class Validation {
       char cur = input.charAt(i);
       if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
           cur != 95) {
-        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
+        if ((!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) &&
+        (!((i == 1 && cur == 126) && ((input.charAt(0) == 0x2206) || (input.charAt(0) == 0x0394))))) {
           // first character can also be:
-          // - \u2206 (∆ - INCREMENT)
-          // - \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
-          // - ~ (tilde character) for internal metrics
-          return false;
-        } else if (!((i == 1 && cur == 126) && ((input.charAt(0) == 0x2206) || (input.charAt(0) == 0x0394)))) {
-          // second character can be ~ (tilde character) if first character is ∆ (\u2206 or \u0394)
+          //  - \u2206 (∆ - INCREMENT)
+          //  - \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
+          //  - ~ (tilde character) for internal metrics
+          // second character can be ~ if first character is ∆
           return false;
         }
       }
