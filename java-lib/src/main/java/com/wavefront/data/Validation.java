@@ -63,6 +63,9 @@ public class Validation {
           // - \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
           // - ~ (tilde character) for internal metrics
           return false;
+        } else if (!((i == 1 && cur == 126) && ((input.charAt(0) == 0x2206) || (input.charAt(0) == 0x0394)))) {
+          // second character can be ~ (tilde character) if first character is ∆ (\u2206 or \u0394)
+          return false;
         }
       }
     }
