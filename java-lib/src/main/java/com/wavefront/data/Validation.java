@@ -339,7 +339,16 @@ public class Validation {
    * Validate Span with provided validation configuration.
    * @param span tracing span
    * @param config validation configuration
-   * @param spanLogsReporter reporter sending SpanLogs to collector
+   */
+  public static void validateSpan(Span span, @Nullable ValidationConfiguration config){
+    validateSpan(span, config, null);
+  }
+
+  /**
+   * Validate Span with provided validation configuration.
+   * @param span tracing span
+   * @param config validation configuration
+   * @param spanLogsReporter reporter sending SpanLogs to Wavefront
    */
   public static void validateSpan(Span span, @Nullable ValidationConfiguration config,
                                   @Nullable Consumer<SpanLogs> spanLogsReporter) {
@@ -409,8 +418,12 @@ public class Validation {
           ERROR_COUNTERS.get("spanAnnotationValueTruncated").inc();
         }
       }
-      // put annotations with oversized values into spanLogs and send them to collector
+      // put annotations with oversized values into spanLogs and send them to Wavefront
       if (annotationsWithOversizedValue != null && !annotationsWithOversizedValue.isEmpty()) {
+        if (!annotations.stream().filter(x -> x.getKey().equals("_spanLogs")).
+                peek(x -> x.setValue(Boolean.toString(true))).findAny().isPresent()) {
+          span.getAnnotations().add(new Annotation("_spanLogs", Boolean.toString(true)));
+        }
         SpanLog spanLog = SpanLog.newBuilder().
                 setTimestamp(-1).
                 setFields(annotationsWithOversizedValue).

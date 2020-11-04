@@ -156,7 +156,7 @@ public class ValidationTest {
     Validation.validateHistogram(histogram, config);
 
     Span span = getValidSpan();
-    Validation.validateSpan(span, config, null);
+    Validation.validateSpan(span, config);
   }
 
   @Test
@@ -371,7 +371,7 @@ public class ValidationTest {
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("$key", "v"));
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-416"));
@@ -381,7 +381,7 @@ public class ValidationTest {
     span = getValidSpan();
     span.setSource("");
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-426"));
@@ -390,11 +390,11 @@ public class ValidationTest {
     // span source name too long: WF-427
     span = getValidSpan();
     span.setSource("source7890");
-    Validation.validateSpan(span, config, null);
+    Validation.validateSpan(span, config);
     span = getValidSpan();
     span.setSource("source78901");
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-427"));
@@ -403,11 +403,11 @@ public class ValidationTest {
     // span name too long: WF-428
     span = getValidSpan();
     span.setName("spanName901234567890");
-    Validation.validateSpan(span, config, null);
+    Validation.validateSpan(span, config);
     span = getValidSpan();
     span.setName("spanName9012345678901");
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-428"));
@@ -417,10 +417,10 @@ public class ValidationTest {
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("k1", "v1"));
     span.getAnnotations().add(new Annotation("k2", "v2"));
-    Validation.validateSpan(span, config, null);
+    Validation.validateSpan(span, config);
     span.getAnnotations().add(new Annotation("k3", "v3"));
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-430"));
@@ -429,11 +429,11 @@ public class ValidationTest {
     // span annotation key too long: WF-432
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("k23456", "v1"));
-    Validation.validateSpan(span, config, null);
+    Validation.validateSpan(span, config);
     span = getValidSpan();
     span.getAnnotations().add(new Annotation("k2345678901234567", "v1"));
     try {
-      Validation.validateSpan(span, config, null);
+      Validation.validateSpan(span, config);
       fail();
     } catch (IllegalArgumentException iae) {
       assertTrue(iae.getMessage().contains("WF-432"));
@@ -462,6 +462,13 @@ public class ValidationTest {
     assertEquals("v123456789012345678901234567890123456",
             spanLogsToReport.get(0).getLogs().get(0).getFields().get("k"));
     assertEquals(-1, spanLogsToReport.get(0).getLogs().get(0).getTimestamp());
+    assertEquals(AnnotationUtils.getValue(span.getAnnotations(), "_spanLogs"), Boolean.toString(true));
+
+    span = getValidSpan();
+    span.getAnnotations().add(new Annotation("k", "v123456789012345678901234567890123456"));
+    span.getAnnotations().add(new Annotation("_spanLogs", Boolean.toString(false)));
+    Validation.validateSpan(span, config, spanLogsConsumer);
+    assertEquals(AnnotationUtils.getValue(span.getAnnotations(), "_spanLogs"), Boolean.toString(true));
   }
 
   @Test
