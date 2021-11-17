@@ -106,7 +106,6 @@ protocol Reporting {
     string eventId;
     long startTime;
     long endTime;
-    string customer = "unknown";
     array<string> hosts = [];
     union {null, string} details = null;
     array<Annotation> annotations = [];  // include verbose event name
