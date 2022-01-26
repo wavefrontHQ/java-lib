@@ -4,12 +4,13 @@
 
   <groupId>com.wavefront</groupId>
   <artifactId>javalib</artifactId>
-  <version>2021-12.2-SNAPSHOT</version>
+  <version>2021-12.2</version>
   <modules>
     <module>java-lib</module>
     <module>yammer-metrics</module>
   </modules>
   <packaging>pom</packaging>
+
 
   <name>Wavefront Java Libraries</name>
   <description>Wavefront Public Java Libraries</description>
