@@ -16,16 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import wavefront.report.Annotation;
-import wavefront.report.ReportHistogram;
-import wavefront.report.ReportMetric;
-import wavefront.report.Span;
-import wavefront.report.SpanLogs;
+import wavefront.report.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author vasily@wavefront.com
@@ -48,7 +41,11 @@ public class ValidationTest {
         setAnnotationsValueLengthLimit(10).
         setSpanAnnotationsCountLimit(3).
         setSpanAnnotationsKeyLengthLimit(16).
-        setSpanAnnotationsValueLengthLimit(36);
+        setSpanAnnotationsValueLengthLimit(36).
+        setLogLengthLimit(100).
+        setLogAnnotationsKeyLengthLimit(10).
+        setLogAnnotationsValueLengthLimit(10).
+        setLogAnnotationsCountLimit(10);
   }
 
   @Test
@@ -472,6 +469,108 @@ public class ValidationTest {
   }
 
   @Test
+  public void testValidLog() {
+    Validation.validateLog(getValidLog(), config);
+  }
+
+  @Test
+  public void testInvalidLog() {
+    // Test Null Source
+    ReportLog nullHostLog = getValidLog();
+    nullHostLog.setHost("");
+    Exception e = assertThrows(DataValidationException.class, () -> Validation.validateLog(nullHostLog, config));
+    assertEquals("WF-450: Log source/host name is required", e.getMessage());
+
+    // Test Host Too Long
+    ReportLog hostTooLongLog = getValidLog();
+    StringBuilder hostTooLong = new StringBuilder();
+    for (int i = 0; i < config.getHostLengthLimit() + 1; i++) {
+      hostTooLong.append("a");
+    }
+    hostTooLongLog.setHost(String.valueOf(hostTooLong));
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(hostTooLongLog, config));
+    String errorMsg = "WF-451: Log source/host name is too long (" +
+            (config.getHostLengthLimit() + 1) + " characters, max: " + config.getHostLengthLimit() + "): " + hostTooLong;
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test Log Message Too Long
+    ReportLog messageTooLongLog = getValidLog();
+    StringBuilder stringTooLong = new StringBuilder();
+    for (int i = 0; i < config.getLogLengthLimit() + 1; i++) {
+      stringTooLong.append("a");
+    }
+    messageTooLongLog.setMessage(String.valueOf(stringTooLong));
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(messageTooLongLog, config));
+    errorMsg = "WF-452: log message is too long (" + (config.getLogLengthLimit() + 1) +
+            " characters, max: " + config.getLogLengthLimit() + "): " + messageTooLongLog.getMessage();
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test Too Many Annotations
+    ReportLog tooManyAnnotationsLog = getValidLog();
+    List<Annotation> annotationList = new ArrayList<>();
+    for (int i = 0; i < config.getLogAnnotationsCountLimit() + 1; i++) {
+      annotationList.add(new Annotation());
+    }
+    tooManyAnnotationsLog.setAnnotations(annotationList);
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(tooManyAnnotationsLog, config));
+    errorMsg = "WF-453: Too many log tags (" + (config.getLogAnnotationsCountLimit() + 1) +
+            ", max " + config.getLogAnnotationsCountLimit() + "): ";
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test annotation Tag Key Too long
+    ReportLog annotationKeyTooLongLog = getValidLog();
+    annotationList = new ArrayList<>();
+    stringTooLong = new StringBuilder();
+    for (int i = 0; i < config.getLogAnnotationsKeyLengthLimit() + 1; i++) {
+      stringTooLong.append("a");
+    }
+    annotationList.add(new Annotation(String.valueOf(stringTooLong), "mValue"));
+    annotationKeyTooLongLog.setAnnotations(annotationList);
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(annotationKeyTooLongLog, config));
+    errorMsg = "WF-454: Log tag key is too long (" +
+            (config.getLogAnnotationsKeyLengthLimit() + 1) + " characters, max: " +
+            config.getLogAnnotationsValueLengthLimit() +
+            "): " + stringTooLong;
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test invalid characters in Annotation Key
+    ReportLog invalidAnnotationKeyLog = getValidLog();
+    annotationList = new ArrayList<>();
+    String invalidKey = "!@#$%^^&*(";
+    annotationList.add(new Annotation(invalidKey, "mValue"));
+    invalidAnnotationKeyLog.setAnnotations(annotationList);
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(invalidAnnotationKeyLog, config));
+    errorMsg = "WF-455: Log tag key has illegal character(s): " + invalidKey;
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test blank Annotation value
+    ReportLog blankAnnotationValueLog = getValidLog();
+    annotationList = new ArrayList<>();
+    annotationList.add(new Annotation("mKey", ""));
+    blankAnnotationValueLog.setAnnotations(annotationList);
+    e = assertThrows(EmptyTagValueException.class, () -> Validation.validateLog(blankAnnotationValueLog, config));
+    errorMsg = "WF-456: log tag value for mKey" +
+            " is empty or missing ";
+    assertEquals(errorMsg, e.getMessage());
+
+    // Test annotation value Too long
+    ReportLog annotationValueTooLongLog = getValidLog();
+    annotationList = new ArrayList<>();
+    stringTooLong = new StringBuilder();
+    for (int i = 0; i < config.getLogAnnotationsValueLengthLimit() + 1; i++) {
+      stringTooLong.append("a");
+    }
+    annotationList.add(new Annotation("mKey", String.valueOf(stringTooLong)));
+    annotationValueTooLongLog.setAnnotations(annotationList);
+    e = assertThrows(DataValidationException.class, () -> Validation.validateLog(annotationValueTooLongLog, config));
+    errorMsg = "WF-457: Log tag value is too long (" +
+            (config.getLogAnnotationsValueLengthLimit() + 1) + " characters, max: " + config.getLogAnnotationsValueLengthLimit() +
+            "): " + stringTooLong;
+    assertEquals(errorMsg, e.getMessage());
+
+  }
+
+  @Test
   public void testValidHistogram() {
     ReportHistogramDecoder decoder = new ReportHistogramDecoder();
     List<ReportHistogram> out = new ArrayList<>();
@@ -510,5 +609,25 @@ public class ValidationTest {
             "traceId=d5355bf7-fc8d-48d1-b761-75b170f396e0 tagkey=tagvalue1 1532012145123456 1532012146234567 ",
         spanOut);
     return spanOut.get(0);
+  }
+
+  private ReportLog getValidLog() {
+    ReportLog log = new ReportLog();
+
+    long timeStamp = System.currentTimeMillis();
+    log.setTimestamp(timeStamp);
+
+    String validSource = "myHost";
+    log.setHost(validSource);
+
+    String message = "oh no an error";
+    log.setMessage(message);
+
+    Annotation annotation = new Annotation("mKey", "mValue");
+    List<Annotation> annotationList = new ArrayList<>();
+    annotationList.add(annotation);
+    log.setAnnotations(annotationList);
+
+    return log;
   }
 }

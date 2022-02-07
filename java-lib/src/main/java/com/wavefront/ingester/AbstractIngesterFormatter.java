@@ -10,11 +10,7 @@ import wavefront.report.Annotation;
 import wavefront.report.Histogram;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -38,6 +34,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   private static final String ESCAPED_SINGLE_QUOTE_STR = "\\'";
   private static final String DOUBLE_QUOTE_STR = "\"";
   private static final String ESCAPED_DOUBLE_QUOTE_STR = "\\\"";
+
+  // todo set these default values
+  private static final List<String> DEFAULT_LOG_MESSAGE_KEYS = Arrays.asList("message", "text");
+  private static final List<String> DEFAULT_LOG_TIMESTAMP_KEYS = Arrays.asList("timestamp", "log_timestamp");
+
 
   protected final List<FormatterElement<T>> elements;
 
@@ -513,12 +514,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       Iterator<Annotation> iter = annotations.iterator();
       while (iter.hasNext()) {
         Annotation annotation = iter.next();
-        if (annotation.getKey().equals("message")) {
-          iter.remove();
-          logMessage = annotation.getValue();
-        } else if (annotation.getKey().equals("text")) {
-          iter.remove();
-          logMessage = annotation.getValue();
+        for (String defaultLogMessageKey : DEFAULT_LOG_MESSAGE_KEYS) {
+          if (annotation.getKey().equals(defaultLogMessageKey)) {
+            iter.remove();
+            logMessage = annotation.getValue();
+          }
         }
       }
 
@@ -548,12 +548,11 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
       Iterator<Annotation> iter = annotations.iterator();
       while (iter.hasNext()) {
         Annotation annotation = iter.next();
-        if (annotation.getKey().equals("timestamp")) {
-          iter.remove();
-          timestampStr = annotation.getValue();
-        } else if (annotation.getKey().equals("log_timestamp")) {
-          iter.remove();
-          timestampStr = annotation.getValue();
+        for (String defaultLogTimestampKey : DEFAULT_LOG_TIMESTAMP_KEYS) {
+          if (annotation.getKey().equals(defaultLogTimestampKey)) {
+            iter.remove();
+            timestampStr = annotation.getValue();
+          }
         }
       }
 
@@ -570,6 +569,9 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
           if (timestampStr != null) break;
         }
       }
+    }
+    if (timestampStr == null) {
+      return Clock.now();
     }
 
     Long timestamp = null;

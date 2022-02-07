@@ -97,7 +97,6 @@ public class Log implements Serializable {
             appendQuoted(sb, annotations.get(key));
             sb.append(", ");
         }
-        sb.delete(sb.length()-2, sb.length());
         appendQuoted(sb, "log_timestamp");
         sb.append(":");
         sb.append(timestamp);
