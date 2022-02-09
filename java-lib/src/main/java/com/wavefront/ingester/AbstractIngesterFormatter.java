@@ -35,7 +35,6 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
   private static final String DOUBLE_QUOTE_STR = "\"";
   private static final String ESCAPED_DOUBLE_QUOTE_STR = "\\\"";
 
-  // todo set these default values
   private static final List<String> DEFAULT_LOG_MESSAGE_KEYS = Arrays.asList("message", "text");
   private static final List<String> DEFAULT_LOG_TIMESTAMP_KEYS = Arrays.asList("timestamp", "log_timestamp");
 
@@ -518,6 +517,7 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
           if (annotation.getKey().equals(defaultLogMessageKey)) {
             iter.remove();
             logMessage = annotation.getValue();
+            break;
           }
         }
       }
@@ -552,6 +552,7 @@ public abstract class AbstractIngesterFormatter<T extends SpecificRecordBase> {
           if (annotation.getKey().equals(defaultLogTimestampKey)) {
             iter.remove();
             timestampStr = annotation.getValue();
+            break;
           }
         }
       }

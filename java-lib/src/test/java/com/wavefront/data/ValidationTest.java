@@ -479,7 +479,7 @@ public class ValidationTest {
     ReportLog nullHostLog = getValidLog();
     nullHostLog.setHost("");
     Exception e = assertThrows(DataValidationException.class, () -> Validation.validateLog(nullHostLog, config));
-    assertEquals("WF-450: Log source/host name is required", e.getMessage());
+    assertEquals(Validation.LOG_SOURCE_REQUIRED_ERROR, e.getMessage());
 
     // Test Host Too Long
     ReportLog hostTooLongLog = getValidLog();
@@ -489,8 +489,8 @@ public class ValidationTest {
     }
     hostTooLongLog.setHost(String.valueOf(hostTooLong));
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(hostTooLongLog, config));
-    String errorMsg = "WF-451: Log source/host name is too long (" +
-            (config.getHostLengthLimit() + 1) + " characters, max: " + config.getHostLengthLimit() + "): " + hostTooLong;
+    String errorMsg = String.format(Validation.LOG_SOURCE_TOO_LONG_ERROR, (config.getHostLengthLimit() + 1)
+            , config.getHostLengthLimit(), hostTooLong);
     assertEquals(errorMsg, e.getMessage());
 
     // Test Log Message Too Long
@@ -501,8 +501,8 @@ public class ValidationTest {
     }
     messageTooLongLog.setMessage(String.valueOf(stringTooLong));
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(messageTooLongLog, config));
-    errorMsg = "WF-452: log message is too long (" + (config.getLogLengthLimit() + 1) +
-            " characters, max: " + config.getLogLengthLimit() + "): " + messageTooLongLog.getMessage();
+    errorMsg = String.format(Validation.LOG_MESSAGE_TOO_LONG_ERROR, config.getLogLengthLimit() + 1
+            , config.getLogLengthLimit(), messageTooLongLog.getMessage());
     assertEquals(errorMsg, e.getMessage());
 
     // Test Too Many Annotations
@@ -513,8 +513,8 @@ public class ValidationTest {
     }
     tooManyAnnotationsLog.setAnnotations(annotationList);
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(tooManyAnnotationsLog, config));
-    errorMsg = "WF-453: Too many log tags (" + (config.getLogAnnotationsCountLimit() + 1) +
-            ", max " + config.getLogAnnotationsCountLimit() + "): ";
+    errorMsg = String.format(Validation.LOG_TOO_MANY_ANNOTATIONS_ERROR, (config.getLogAnnotationsCountLimit() + 1)
+            , config.getLogAnnotationsCountLimit());
     assertEquals(errorMsg, e.getMessage());
 
     // Test annotation Tag Key Too long
@@ -527,10 +527,8 @@ public class ValidationTest {
     annotationList.add(new Annotation(String.valueOf(stringTooLong), "mValue"));
     annotationKeyTooLongLog.setAnnotations(annotationList);
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(annotationKeyTooLongLog, config));
-    errorMsg = "WF-454: Log tag key is too long (" +
-            (config.getLogAnnotationsKeyLengthLimit() + 1) + " characters, max: " +
-            config.getLogAnnotationsValueLengthLimit() +
-            "): " + stringTooLong;
+    errorMsg = String.format(Validation.LOG_TAG_KEY_TOO_LONG_ERROR, (config.getLogAnnotationsKeyLengthLimit() + 1)
+            , config.getLogAnnotationsValueLengthLimit(), stringTooLong);
     assertEquals(errorMsg, e.getMessage());
 
     // Test invalid characters in Annotation Key
@@ -540,7 +538,7 @@ public class ValidationTest {
     annotationList.add(new Annotation(invalidKey, "mValue"));
     invalidAnnotationKeyLog.setAnnotations(annotationList);
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(invalidAnnotationKeyLog, config));
-    errorMsg = "WF-455: Log tag key has illegal character(s): " + invalidKey;
+    errorMsg = String.format(Validation.LOG_TAG_KEY_ILLEGAL_CHAR_ERROR, invalidKey);
     assertEquals(errorMsg, e.getMessage());
 
     // Test blank Annotation value
@@ -549,8 +547,7 @@ public class ValidationTest {
     annotationList.add(new Annotation("mKey", ""));
     blankAnnotationValueLog.setAnnotations(annotationList);
     e = assertThrows(EmptyTagValueException.class, () -> Validation.validateLog(blankAnnotationValueLog, config));
-    errorMsg = "WF-456: log tag value for mKey" +
-            " is empty or missing ";
+    errorMsg = String.format(Validation.LOG_ANNOTATION_NO_VALUE_ERROR, "mKey");
     assertEquals(errorMsg, e.getMessage());
 
     // Test annotation value Too long
@@ -563,9 +560,8 @@ public class ValidationTest {
     annotationList.add(new Annotation("mKey", String.valueOf(stringTooLong)));
     annotationValueTooLongLog.setAnnotations(annotationList);
     e = assertThrows(DataValidationException.class, () -> Validation.validateLog(annotationValueTooLongLog, config));
-    errorMsg = "WF-457: Log tag value is too long (" +
-            (config.getLogAnnotationsValueLengthLimit() + 1) + " characters, max: " + config.getLogAnnotationsValueLengthLimit() +
-            "): " + stringTooLong;
+    errorMsg = String.format(Validation.LOG_ANNOTATION_VALUE_TOO_LONG_ERROR,
+            (config.getLogAnnotationsValueLengthLimit() + 1), config.getLogAnnotationsValueLengthLimit(), stringTooLong);
     assertEquals(errorMsg, e.getMessage());
 
   }

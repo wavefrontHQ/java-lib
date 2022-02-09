@@ -43,9 +43,9 @@ public class ReportLogDecoderTest {
         assertEquals(log.getAnnotations().size(), 0);
     }
 
-    // Tests bad messages
+    // Tests messages that are not successful
     @Test
-    public void testBadMessage() {
+    public void testInvalidMessage() {
         // The input message is not in JSON format
         ReportLogDecoder decoder = new ReportLogDecoder(defaultHostSupplier, null, null, null);
         List<ReportLog> out = new ArrayList<>();

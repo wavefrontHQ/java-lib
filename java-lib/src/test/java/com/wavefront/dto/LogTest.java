@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 
 public class LogTest {
     @Test
-    public void testBasicLog() {
+    public void testToString_NoAnnotations() {
 
         Log log1 = new Log(new ReportLog(1234567L, "oops", "myHost", new ArrayList<>()));
 
@@ -21,7 +21,7 @@ public class LogTest {
     }
 
     @Test
-    public void testLogWithAnnotations() {
+    public void testToString_WithAnnotations() {
 
         Log log1 = new Log(new ReportLog(1234567L, "oops", "myHost", Collections.singletonList(
                 new Annotation("key1", "value1")
