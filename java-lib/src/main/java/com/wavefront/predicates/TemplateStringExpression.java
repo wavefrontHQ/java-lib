@@ -3,10 +3,7 @@ package com.wavefront.predicates;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import wavefront.report.ReportHistogram;
-import wavefront.report.ReportMetric;
-import wavefront.report.ReportPoint;
-import wavefront.report.Span;
+import wavefront.report.*;
 
 /**
  * A string template rendered. Substitutes {{...}} placeholders with corresponding
@@ -34,6 +31,8 @@ public class TemplateStringExpression implements StringExpression {
       return Util.expandPlaceholders(template, (ReportPoint) entity);
     } else if (entity instanceof Span) {
       return Util.expandPlaceholders(template, (Span) entity);
+    } else if (entity instanceof ReportLog) {
+      return Util.expandPlaceholders(template, (ReportLog) entity);
     } else {
       throw new IllegalArgumentException(entity.getClass().getCanonicalName() +
           " is not supported!");

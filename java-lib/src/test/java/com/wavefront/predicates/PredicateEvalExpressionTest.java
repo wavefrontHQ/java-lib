@@ -7,14 +7,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import wavefront.report.Annotation;
-import wavefront.report.Histogram;
-import wavefront.report.HistogramType;
-import wavefront.report.ReportEvent;
-import wavefront.report.ReportHistogram;
-import wavefront.report.ReportMetric;
-import wavefront.report.ReportPoint;
-import wavefront.report.Span;
+import wavefront.report.*;
 
 import static com.wavefront.predicates.Predicates.parsePredicateEvalExpression;
 import static org.junit.Assert.assertEquals;
@@ -77,6 +70,16 @@ public class PredicateEvalExpressionTest {
       setEndTime(System.currentTimeMillis() + 1).
       setAnnotations(ImmutableMap.of()).
       build();
+
+  private final ReportLog log = ReportLog.newBuilder().
+          setHost("testHost").
+          setTimestamp(1532012145123L).
+          setMessage("oops").
+          setAnnotations(ImmutableList.of(
+                  new Annotation("tagk1", "tagv1"), new Annotation("tagk2", "tagv2"),
+                  new Annotation("env", "prod"), new Annotation("dc", "us-west-2")
+          )).
+          build();
 
   @Test
   public void testAsPredicate() {
@@ -362,6 +365,16 @@ public class PredicateEvalExpressionTest {
     parseAndAssertEq(1, "$timestamp < time('now')", histogram);
     parseAndAssertEq(0, "$timestamp > time('31 seconds ago')", histogram);
     parseAndAssertEq(1, "$timestamp < time('2020-06-23', 'UTC')", histogram);
+  }
+
+  @Test
+  public void testLogExpressions() {
+    parseAndAssertEq(1, "{{sourceName}} contains 'test'", log);
+    parseAndAssertEq(1, "'{{sourceName}}' contains 'test'", log);
+    parseAndAssertEq(1, "\"{{sourceName}}\" contains 'test'", log);
+    parseAndAssertEq(1, "{{tagk1}} equals 'tagv1'", log);
+    parseAndAssertEq(1, "{{message}} equals 'oops'", log);
+    parseAndAssertEq(1, "{{doesNotExist}}.isEmpty()", log);
   }
 
   @Test(expected = ExpressionSyntaxException.class)
