@@ -43,6 +43,7 @@ public interface ProxyV2API {
   AgentConfiguration proxyCheckin(@HeaderParam("X-WF-PROXY-ID") final UUID proxyId,
                                   @HeaderParam("Authorization") String authorization,
                                   @QueryParam("hostname") String hostname,
+                                  @QueryParam("proxyname") String proxyname,
                                   @QueryParam("version") String version,
                                   @QueryParam("currentMillis") final Long currentMillis,
                                   @GZIP JsonNode agentMetrics,
