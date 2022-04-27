@@ -30,6 +30,7 @@ public interface ProxyV2API {
    * @param proxyId       ID of the proxy.
    * @param authorization Authorization token.
    * @param hostname      Host name of the proxy.
+   * @param proxyname     Proxy name of the proxy (used as internal metric source).
    * @param version       Build version of the proxy.
    * @param currentMillis Current time at the proxy (used to calculate clock drift).
    * @param agentMetrics  Proxy metrics.
