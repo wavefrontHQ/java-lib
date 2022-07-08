@@ -2,10 +2,7 @@ package com.wavefront.api;
 
 import com.wavefront.dto.Event;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -25,4 +22,11 @@ public interface EventAPI {
   @Path("v2/wfproxy/event")
   Response proxyEvents(@HeaderParam("X-WF-PROXY-ID") final UUID proxyId,
                        final List<Event> eventBatch);
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.TEXT_PLAIN)
+  @Path("v2/wfproxy/event")
+  Response proxyEventsString(@HeaderParam("X-WF-PROXY-ID") final UUID proxyId,
+                       final String eventBatch);
 }
