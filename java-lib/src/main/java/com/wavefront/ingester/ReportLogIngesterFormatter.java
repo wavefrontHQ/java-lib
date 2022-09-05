@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Ingestion formatter for logs.
@@ -37,17 +39,17 @@ public class ReportLogIngesterFormatter extends AbstractIngesterFormatter<Report
     @Override
     public ReportLog drive(String logJson, @Nullable Supplier<String> defaultHostNameSupplier,
                            String customerId, @Nullable List<String> customSourceTags, @Nullable List<String> customLogTimestampTags,
-                           @Nullable List<String> customLogMessageTags, List<String> customLogApplicationTags, List<String> customLogServiceTags, @Nullable IngesterContext ingesterContext) {
+                           @Nullable List<String> customLogMessageTags, List<String> customLogApplicationTags, List<String> customLogServiceTags,
+                           @Nullable List<String> customLogLevelTags,@Nullable List<String> customLogExceptionTags, @Nullable IngesterContext ingesterContext) {
         final ReportLog log = new ReportLog();
         List<Annotation> annotations = new ArrayList<>();
 
         try {
             Map<String, Object> tagMap = new ObjectMapper().readValue(logJson, new TypeReference<Map<String,Object>>(){});
-            for (Map.Entry<String, Object> tagKV : tagMap.entrySet()) {
-                String tagK = tagKV.getKey();
-                String tagV = (tagKV.getValue() == null)? "null" : tagKV.getValue().toString();
-                annotations.add(Annotation.newBuilder().setKey(tagK).setValue(tagV).build());
-            }
+            List<String> logMessageTags = customLogMessageTags == null ? AbstractIngesterFormatter.getDefaultLogMessageKeys() :
+                    Stream.concat(AbstractIngesterFormatter.getDefaultLogMessageKeys().stream(), customLogMessageTags.stream()).collect(Collectors.toList());
+            JsonParser parser = new JsonParser(tagMap, logMessageTags);
+            parser.flattenJson(annotations);
             log.setAnnotations(annotations);
             String host = AbstractIngesterFormatter.getHost(log.getAnnotations(), customSourceTags);
             if (host == null) {
@@ -66,6 +68,10 @@ public class ReportLogIngesterFormatter extends AbstractIngesterFormatter<Report
             log.setApplication(application);
             String service = AbstractIngesterFormatter.getLogService(log.getAnnotations(), customLogServiceTags);
             log.setService(service);
+            String level = AbstractIngesterFormatter.getLogLevel(log.getAnnotations(), customLogLevelTags);
+            log.setLevel(level);
+            String exception = AbstractIngesterFormatter.getLogException(log.getAnnotations(), customLogExceptionTags);
+            log.setException(exception);
             return log;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
