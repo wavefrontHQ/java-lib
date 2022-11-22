@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.wavefront.metrics.JsonMetricsGenerator.extractVersion;
 
 /**
  * Basic unit tests around {@link JsonMetricsGenerator}
@@ -277,5 +278,16 @@ public class JsonMetricsGeneratorTest {
     String json = generate(false, false, false, null);
 
     assertThat(json).isEqualTo("{\"test.metric\":{\"bins\":[]}}");
+  }
+
+  @Test
+  public void testExtractVersion(){
+    assertThat(extractVersion("12.1")).isEqualTo(12_001_000);
+    assertThat(extractVersion("12.1.0")).isEqualTo(12_001_000);
+    assertThat(extractVersion("12.1.1")).isEqualTo(12_001_001);
+    assertThat(extractVersion("12.1-SNAPSHOT")).isEqualTo(12_001_000);
+    assertThat(extractVersion("12.1.0-SNAPSHOT")).isEqualTo(12_001_000);
+    assertThat(extractVersion("12")).isEqualTo(0);
+    assertThat(extractVersion("SNAPSHOT")).isEqualTo(0);
   }
 }
