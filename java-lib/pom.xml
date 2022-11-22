@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>java-lib</artifactId>
-  <version>2022-10.2-SNAPSHOT</version>
+  <version>proxy-new-SNAPSHOT</version>
 
   <parent>
     <groupId>com.wavefront</groupId>
     <artifactId>javalib</artifactId>
-    <version>2022-10.2-SNAPSHOT</version>
+    <version>proxy-new-SNAPSHOT</version>
   </parent>
 
   <name>Wavefront Shared Java Library</name>
@@ -117,11 +117,11 @@
       <scope>test</scope>
       <version>4.0.1</version>
     </dependency>
-      <dependency>
-          <groupId>javax.ws.rs</groupId>
-          <artifactId>javax.ws.rs-api</artifactId>
-          <version>2.1.1</version>
-      </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
+    </dependency>
   </dependencies>
 
   <build>

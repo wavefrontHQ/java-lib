@@ -38,8 +38,11 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
+import javax.annotation.RegEx;
 
 import static com.wavefront.common.MetricsToTimeseries.sanitize;
 
@@ -146,24 +149,19 @@ public abstract class JsonMetricsGenerator {
   }
 
   static int extractVersion(String versionStr) {
-    int version = 0;
-    String[] components = versionStr.split("\\.");
-    for (int i = 0; i < Math.min(3, components.length); i++) {
-      String component = components[i];
-      if (StringUtils.isNotBlank(component) && StringUtils.isNumeric(component)) {
-        version *= 1000; // we'll assume this will fit. 3.123.0 will become 3123000.
-        version += Integer.valueOf(component);
-      } else {
-        version = 0; // not actually a convertable name (probably something with SNAPSHOT).
-        break;
+    final String regex = "^(\\d*)\\.(\\d*)\\.?(\\d*)?";
+    final Pattern pattern = Pattern.compile(regex);
+    final Matcher matcher = pattern.matcher(versionStr);
+
+    int x = 0, y = 0, z = 0;
+    if (matcher.find()) {
+      x = Integer.valueOf(matcher.group(1));
+      y = Integer.valueOf(matcher.group(2));
+      if (!matcher.group(3).equals("")) {
+        z = Integer.valueOf(matcher.group(3));
       }
     }
-    if (components.length == 2) {
-      version *= 1000;
-    } else if (components.length == 1) {
-      version *= 1000000; // make sure 3   outputs 3000000
-    }
-    return version;
+    return (x * 1_000_000 + y * 1_000 + z);
   }
 
   private static void mergeMapIntoJson(JsonGenerator jsonGenerator, Map<String, Double> metrics) throws IOException {
