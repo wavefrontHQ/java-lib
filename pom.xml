@@ -4,7 +4,7 @@
 
   <groupId>com.wavefront</groupId>
   <artifactId>javalib</artifactId>
-  <version>MONIT-30818-SNAPSHOT</version>
+  <version>2022-11.2-SNAPSHOT</version>
   <modules>
     <module>java-lib</module>
     <module>yammer-metrics</module>
