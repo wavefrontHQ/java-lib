@@ -4,7 +4,7 @@
 
   <groupId>com.wavefront</groupId>
   <artifactId>javalib</artifactId>
-  <version>2022-11.2-SNAPSHOT</version>
+  <version>2023-01.1</version>
   <modules>
     <module>java-lib</module>
     <module>yammer-metrics</module>
