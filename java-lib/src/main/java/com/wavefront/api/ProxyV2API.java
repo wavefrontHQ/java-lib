@@ -48,6 +48,7 @@ public interface ProxyV2API {
                                   @QueryParam("currentMillis") final Long currentMillis,
                                   JsonNode agentMetrics,
                                   @QueryParam("ephemeral") Boolean ephemeral);
+                                  
   @POST
   @Path("v2/wfproxy/saveConfig")
   @Consumes(MediaType.APPLICATION_JSON)
