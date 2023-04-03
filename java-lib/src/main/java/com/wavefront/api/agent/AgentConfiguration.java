@@ -108,12 +108,6 @@ public class AgentConfiguration {
   private String logServerToken;
 
   /**
-   * This flag indicates if the customer is on CSP and tenants are converged (the same)
-   * btw WF and VRLIC
-   */
-  private boolean enableHyperlogsConvergedCsp = false;
-
-  /**
    * Server-side configuration for various limits to be enforced at the proxy.
    */
   private ValidationConfiguration validationConfiguration;
@@ -347,13 +341,6 @@ public class AgentConfiguration {
 
   public void setLogServerToken(String logServerToken) { this.logServerToken = logServerToken; }
 
-  public boolean isEnableHyperlogsConvergedCsp() {
-    return enableHyperlogsConvergedCsp;
-  }
-
-  public void setEnableHyperlogsConvergedCsp(boolean enableHyperlogsConvergedCsp) {
-    this.enableHyperlogsConvergedCsp = enableHyperlogsConvergedCsp;
-  }
   public ValidationConfiguration getValidationConfiguration() {
     return this.validationConfiguration;
   }
