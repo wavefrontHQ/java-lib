@@ -218,12 +218,13 @@ public class ValidationConfiguration {
     return this;
   }
 
-  public boolean isEnableHyperlogsConvergedCsp() {
+  public boolean enableHyperlogsConvergedCsp() {
     return enableHyperlogsConvergedCsp;
   }
 
-  public void setEnableHyperlogsConvergedCsp(boolean enableHyperlogsConvergedCsp) {
+  public ValidationConfiguration setEnableHyperlogsConvergedCsp(boolean enableHyperlogsConvergedCsp) {
     this.enableHyperlogsConvergedCsp = enableHyperlogsConvergedCsp;
+    return this;
   }
 
   public void updateFrom(@Nullable ValidationConfiguration other) {
@@ -242,6 +243,6 @@ public class ValidationConfiguration {
     this.logAnnotationsKeyLengthLimit = other.getLogAnnotationsKeyLengthLimit();
     this.logAnnotationsValueLengthLimit = other.getLogAnnotationsValueLengthLimit();
     this.logAnnotationsCountLimit = other.getLogAnnotationsCountLimit();
-    this.enableHyperlogsConvergedCsp = other.isEnableHyperlogsConvergedCsp();
+    this.enableHyperlogsConvergedCsp = other.enableHyperlogsConvergedCsp();
   }
 }
