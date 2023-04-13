@@ -90,7 +90,7 @@ public class ValidationConfiguration {
 
   /**
    * This flag indicates if the customer is on CSP and tenants are converged (the same)
-   * btw WF and VRLIC
+   * between WF and VRLIC
    */
   private boolean enableHyperlogsConvergedCsp = false;
 
